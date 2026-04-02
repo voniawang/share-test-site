@@ -54,11 +54,17 @@ print(json.dumps({
 }))
 PY
 )"
-  curl -sS -X POST \
+  create_status="$(curl -s -o /tmp/share-test-create.json -w "%{http_code}" \
+    -X POST \
     -H "Authorization: Bearer ${GH_TOKEN}" \
     -H "Accept: application/vnd.github+json" \
     -d "${create_payload}" \
-    "${API_ROOT}/user/repos" >/tmp/share-test-create.json
+    "${API_ROOT}/user/repos")"
+  if [[ "${create_status}" != "201" ]]; then
+    echo "Failed to create repository. HTTP ${create_status}"
+    cat /tmp/share-test-create.json
+    exit 1
+  fi
 elif [[ "${repo_status}" != "200" ]]; then
   echo "Failed to query repository. HTTP ${repo_status}"
   cat /tmp/share-test-repo.json
