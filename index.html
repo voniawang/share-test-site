@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Figma 交互原型</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            overflow: hidden;
+            background: #000;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .artboard {
+            position: absolute;
+            width: 1600px;
+            height: 1000px;
+            background: #444;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            transform-origin: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .artboard.active {
+            opacity: 1;
+        }
+
+        /* 背景层 */
+        .bg-layer {
+            position: absolute;
+            inset: 0;
+        }
+
+        .bg-layer img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 任务栏 */
+        .taskbar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(34, 34, 37, 0.8);
+            backdrop-filter: blur(50px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+
+        .taskbar-center {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            gap: 26px;
+            align-items: center;
+        }
+
+        .taskbar-icon {
+            width: 29px;
+            height: 29px;
+        }
+
+        .taskbar-icon img {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 左侧应用栏 */
+        .app-sidebar {
+            position: absolute;
+            left: 14px;
+            top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .app-item {
+            width: 120px;
+            height: 105px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+        }
+
+        .app-icon {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 8px;
+        }
+
+        .app-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .app-label {
+            color: white;
+            font-size: 15px;
+            text-align: center;
+        }
+
+        /* 天气组件 */
+        .weather-widget {
+            position: absolute;
+            left: 14px;
+            top: 5px;
+            width: 180px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .weather-widget img {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 系统托盘 */
+        .system-tray {
+            position: absolute;
+            right: 29px;
+            top: 9.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .system-tray img {
+            height: 40px;
+        }
+
+        /* 输入框容器 - 初始画板隐藏 */
+        .input-panel {
+            position: absolute;
+            left: 50%;
+            bottom: 89px;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 36px;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* 输入框容器 - 输入条画板 */
+        .input-panel-slide {
+            position: absolute;
+            left: 50%;
+            bottom: -200px;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 36px;
+            align-items: center;
+            transition: bottom 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 2;
+        }
+
+        .input-panel-slide.active {
+            bottom: 80px;
+        }
+
+        /* Apple 霓虹光效 */
+        .input-ripple {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 100;
+            opacity: 0;
+        }
+
+        .input-ripple.active {
+            opacity: 1;
+        }
+
+        .input-ripple::before,
+        .input-ripple::after {
+            content: '';
+            position: absolute;
+            filter: blur(6px);
+            box-shadow:
+                0 0 60px rgba(255, 255, 255, 1),
+                0 0 120px rgba(255, 150, 230, 1),
+                0 0 180px rgba(200, 120, 255, 1),
+                0 0 240px rgba(120, 200, 255, 1),
+                0 0 300px rgba(220, 120, 255, 1),
+                0 0 360px rgba(255, 150, 230, 0.9),
+                0 0 420px rgba(200, 120, 255, 0.7);
+            opacity: 0;
+        }
+
+        /* 底部光效条 */
+        .input-ripple::before {
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 0;
+            width: 0;
+            height: 6px;
+            background: linear-gradient(
+                to right,
+                rgba(255, 180, 130, 1) 0%,
+                rgba(255, 150, 210, 1) 20%,
+                rgba(240, 150, 255, 1) 40%,
+                rgba(150, 210, 255, 1) 60%,
+                rgba(180, 245, 255, 1) 80%,
+                rgba(240, 150, 255, 1) 100%
+            );
+        }
+
+        .input-ripple.active::before {
+            animation: bottom-glow-expand 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        /* 左边框光效 */
+        .input-ripple::after {
+            left: 0;
+            bottom: 0;
+            width: 6px;
+            height: 0;
+            background: linear-gradient(
+                to top,
+                rgba(255, 180, 130, 1) 0%,
+                rgba(255, 150, 210, 1) 15%,
+                rgba(240, 150, 255, 1) 30%,
+                rgba(150, 210, 255, 1) 50%,
+                rgba(180, 245, 255, 1) 70%,
+                rgba(240, 150, 255, 1) 85%,
+                rgba(255, 150, 210, 1) 100%
+            );
+        }
+
+        .input-ripple.active::after {
+            animation: edge-glow-left 1s cubic-bezier(0.16, 1, 0.3, 1) 0.8s;
+        }
+
+        /* 右边框光效 */
+        .input-ripple .glow-right {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 6px;
+            height: 0;
+            background: linear-gradient(
+                to top,
+                rgba(255, 180, 130, 1) 0%,
+                rgba(255, 150, 210, 1) 15%,
+                rgba(240, 150, 255, 1) 30%,
+                rgba(150, 210, 255, 1) 50%,
+                rgba(180, 245, 255, 1) 70%,
+                rgba(240, 150, 255, 1) 85%,
+                rgba(255, 150, 210, 1) 100%
+            );
+            filter: blur(6px);
+            box-shadow:
+                0 0 60px rgba(255, 255, 255, 1),
+                0 0 120px rgba(255, 150, 230, 1),
+                0 0 180px rgba(200, 120, 255, 1),
+                0 0 240px rgba(120, 200, 255, 1),
+                0 0 300px rgba(220, 120, 255, 1),
+                0 0 360px rgba(255, 150, 230, 0.9),
+                0 0 420px rgba(200, 120, 255, 0.7);
+            opacity: 0;
+        }
+
+        .input-ripple.active .glow-right {
+            animation: edge-glow-right 1s cubic-bezier(0.16, 1, 0.3, 1) 0.8s;
+        }
+
+        /* 顶部光效条 */
+        .input-ripple .glow-top {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            height: 6px;
+            background: linear-gradient(
+                to right,
+                rgba(255, 150, 210, 1) 0%,
+                rgba(240, 150, 255, 1) 25%,
+                rgba(150, 210, 255, 1) 50%,
+                rgba(240, 150, 255, 1) 75%,
+                rgba(255, 150, 210, 1) 100%
+            );
+            filter: blur(6px);
+            box-shadow:
+                0 0 60px rgba(255, 255, 255, 1),
+                0 0 120px rgba(255, 150, 230, 1),
+                0 0 180px rgba(200, 120, 255, 1),
+                0 0 240px rgba(120, 200, 255, 1),
+                0 0 300px rgba(220, 120, 255, 1),
+                0 0 360px rgba(255, 150, 230, 0.9),
+                0 0 420px rgba(200, 120, 255, 0.7);
+            opacity: 0;
+        }
+
+        .input-ripple.active .glow-top {
+            animation: top-glow 2.0s cubic-bezier(0.16, 1, 0.3, 1) 1.2s;
+        }
+
+        @keyframes bottom-glow-expand {
+            0% {
+                width: 0;
+                height: 12px;
+                opacity: 0;
+            }
+            10% {
+                height: 10px;
+                opacity: 1;
+            }
+            40% {
+                height: 6px;
+            }
+            70% {
+                width: 100%;
+                height: 3px;
+                opacity: 1;
+            }
+            92% {
+                width: 100%;
+                height: 2px;
+                opacity: 1;
+            }
+            100% {
+                width: 100%;
+                height: 2px;
+                opacity: 0;
+            }
+        }
+
+        @keyframes edge-glow-left {
+            0% {
+                height: 0;
+                opacity: 0;
+            }
+            15% {
+                opacity: 1;
+            }
+            45% {
+                height: 100%;
+                opacity: 1;
+            }
+            80% {
+                opacity: 0.8;
+            }
+            100% {
+                height: 100%;
+                opacity: 0;
+            }
+        }
+
+        @keyframes edge-glow-right {
+            0% {
+                height: 0;
+                opacity: 0;
+            }
+            15% {
+                opacity: 1;
+            }
+            45% {
+                height: 100%;
+                opacity: 1;
+            }
+            80% {
+                opacity: 0.8;
+            }
+            100% {
+                height: 100%;
+                opacity: 0;
+            }
+        }
+
+        @keyframes top-glow {
+            0% {
+                opacity: 0;
+            }
+            15% {
+                opacity: 1;
+            }
+            70% {
+                opacity: 0.9;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+
+        /* Q1 提示 */
+        .q1-hint {
+            position: absolute;
+            left: 50%;
+            bottom: 186px;
+            transform: translateX(-50%);
+            width: 956px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .q1-hint.show {
+            opacity: 1;
+        }
+
+        .q1-hint img {
+            display: block;
+            height: 86px;
+            width: auto;
+            margin-left: 190px;
+        }
+
+        /* Q2 提示 - 在 Q1 上方，间距 -26px */
+        .q2-hint {
+            position: absolute;
+            left: 50%;
+            bottom: 246px;
+            transform: translateX(-50%);
+            width: 956px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .q2-hint.show {
+            opacity: 1;
+        }
+
+        .q2-hint img {
+            display: block;
+            height: 86px;
+            width: auto;
+            margin-left: 190px;
+        }
+
+        /* Q3 提示 - 在 Q2 上方，间距 -26px */
+        .q3-hint {
+            position: absolute;
+            left: 50%;
+            bottom: 306px;
+            transform: translateX(-50%);
+            width: 956px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .q3-hint.show {
+            opacity: 1;
+        }
+
+        .q3-hint img {
+            display: block;
+            height: 86px;
+            width: auto;
+            margin-left: 190px;
+        }
+
+        /* 快捷按钮 */
+        .query-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            opacity: 0;
+        }
+
+        .query-btn {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(13px);
+            border: 1px solid transparent;
+            border-radius: 100px;
+            padding: 12px 20px;
+            color: white;
+            font-size: 16px;
+            box-shadow: 0 0 4px rgba(0, 0, 0, 0.1), 0 2px 17px rgba(0, 0, 0, 0.12);
+            white-space: nowrap;
+        }
+
+        /* 输入框 */
+        .input-container {
+            width: 956px;
+            height: 116px;
+            position: relative;
+        }
+
+        .input-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .input-overlay {
+            position: absolute;
+            left: 224px;
+            top: calc(50% - 5px);
+            transform: translateY(-50%);
+            right: 120px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .input-field {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: rgba(255, 255, 255, 0.92);
+            font-size: 16px;
+            font-family: 'Microsoft YaHei', sans-serif;
+            font-weight: 400;
+        }
+
+        .input-field::placeholder {
+            color: rgba(255, 255, 255, 0.56);
+        }
+
+        .voice-btn {
+            width: 28px;
+            height: 28px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+
+        .voice-btn img {
+            width: 100%;
+            height: 100%;
+        }
+
+        .divider {
+            width: 1px;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .send-btn {
+            position: absolute;
+            right: 223px;
+            top: calc(50% - 2px);
+            transform: translateY(-50%);
+            width: 35px;
+            height: 35px;
+            background: transparent;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.2s;
+            flex-shrink: 0;
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .send-btn img {
+            width: 100%;
+            height: 100%;
+            transition: opacity 0.2s;
+            position: absolute;
+        }
+
+        .send-btn .default-icon {
+            opacity: 1;
+        }
+
+        .send-btn .active-icon {
+            opacity: 0;
+        }
+
+        .send-btn.active .default-icon {
+            opacity: 0;
+        }
+
+        .send-btn.active .active-icon {
+            opacity: 1;
+        }
+
+        /* 对话面板 */
+        .chat-panel {
+            position: absolute;
+            left: 50%;
+            bottom: 80px;
+            transform: translateX(-50%);
+            width: 524px;
+            height: 440px;
+            background-image: url('./assets/bg.png');
+            background-size: cover;
+            background-position: center;
+            border-radius: 28px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            padding: 70px 50px 40px 50px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-panel.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .chat-panel.with-input {
+            padding-bottom: 100px;
+        }
+
+        /* 内容滚动容器 */
+        .chat-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding-bottom: 20px;
+        }
+
+        .chat-content::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* 用户消息气泡 */
+        .user-message {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(10px);
+            border-radius: 16px 16px 4px 16px;
+            padding: 14px 20px;
+            color: white;
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 30px;
+            align-self: flex-end;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        /* AI 回复状态 */
+        .ai-response {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 15px;
+            line-height: 1.6;
+            position: relative;
+            background: linear-gradient(90deg,
+                rgba(255, 255, 255, 0.7) 0%,
+                rgba(255, 255, 255, 0.7) 40%,
+                rgba(255, 255, 255, 1) 50%,
+                rgba(255, 255, 255, 0.7) 60%,
+                rgba(255, 255, 255, 0.7) 100%);
+            background-size: 200% 100%;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer-text 2s infinite;
+        }
+
+        .ai-response.loaded {
+            animation: none;
+            background: none;
+            color: rgba(255, 255, 255, 0.9);
+            -webkit-text-fill-color: rgba(255, 255, 255, 0.9);
+        }
+
+        .ai-response h3 {
+            font-size: 17px;
+            font-weight: 600;
+            margin: 20px 0 12px 0;
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        .ai-response h3:first-of-type {
+            margin-top: 16px;
+        }
+
+        .ai-response p {
+            margin: 10px 0;
+            line-height: 1.8;
+        }
+
+        .ai-response strong {
+            font-weight: 600;
+            color: rgba(255, 255, 255, 1);
+        }
+
+        /* 操作栏 */
+        .action-bar {
+            margin-top: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .action-bar.show {
+            opacity: 1;
+        }
+
+        .action-bar img {
+            width: 100%;
+            height: auto;
+        }
+
+        /* 底部输入框 */
+        .bottom-input {
+            position: absolute;
+            left: 50%;
+            bottom: 20px;
+            transform: translateX(-50%) scale(1.1);
+            width: calc(100% - 100px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .bottom-input.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .bottom-input img {
+            width: 100%;
+            height: auto;
+        }
+
+        /* 水波光效 */
+        .ripple-effect {
+            position: absolute;
+            left: 50%;
+            bottom: 50px;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 100px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .ripple-effect::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(100, 150, 255, 0.6) 0%, rgba(100, 150, 255, 0.3) 40%, transparent 70%);
+            border-radius: 50%;
+            opacity: 0;
+        }
+
+        @keyframes shimmer-text {
+            0% {
+                background-position: -100% 0;
+            }
+            100% {
+                background-position: 100% 0;
+            }
+        }
+
+        /* 响应式缩放 */
+        @media (max-width: 1600px), (max-height: 1000px) {
+            .artboard {
+                transform: scale(0.8);
+            }
+        }
+
+        /* 提示文字 */
+        .hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            z-index: 1000;
+            transition: opacity 0.3s;
+        }
+
+        .hint.hidden {
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 初始画板 -->
+        <div class="artboard active" id="artboard1">
+            <!-- 使用完整截图作为背景 -->
+            <img src="./assets/初始.png" alt="初始界面" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+
+        <!-- 输入条画板 -->
+        <div class="artboard" id="artboard2">
+            <!-- 使用相同的背景图 -->
+            <img src="./assets/初始.png" alt="背景" style="width: 100%; height: 100%; object-fit: cover;">
+
+            <!-- 对话面板 -->
+            <div class="chat-panel" id="chatPanel">
+                <div class="chat-content" id="chatContent">
+                    <div class="user-message" id="userMessage"></div>
+                    <div class="ai-response" id="aiResponse">正在分析中...</div>
+                    <div class="action-bar" id="actionBar">
+                        <img src="./assets/Output  操作栏.png" alt="操作栏">
+                    </div>
+                </div>
+                <div class="bottom-input" id="bottomInput">
+                    <img src="./assets/Input Box.png" alt="输入框">
+                </div>
+            </div>
+
+            <!-- Q3 提示 - 最上方 -->
+            <div class="q3-hint" id="q3Hint">
+                <img src="./assets/q3.png" alt="总结这封邮件的核心要点">
+            </div>
+
+            <!-- Q2 提示 - 中间 -->
+            <div class="q2-hint" id="q2Hint">
+                <img src="./assets/q2.png" alt="识别屏幕">
+            </div>
+
+            <!-- Q1 提示 - 最下方 -->
+            <div class="q1-hint" id="q1Hint">
+                <img src="./assets/q1.png" alt="润色下邮件话术">
+            </div>
+
+            <!-- 输入框背景水波效果 -->
+            <div class="input-ripple" id="inputRipple">
+                <div class="glow-right"></div>
+                <div class="glow-top"></div>
+            </div>
+
+            <!-- 输入框面板 - 从底部滑入 -->
+            <div class="input-panel-slide" id="inputPanel">
+                <div class="query-buttons">
+                    <div class="query-btn">🧐 总结这封邮件的核心要点</div>
+                    <div class="query-btn">👀 识别屏幕</div>
+                    <div class="query-btn">📚 润色下邮件话术</div>
+                </div>
+
+                <div class="input-container">
+                    <img src="./assets/输入框.png" alt="输入框">
+                    <div class="input-overlay">
+                        <input type="text" class="input-field" id="inputField" placeholder="有问题，尽管问">
+                    </div>
+                    <button class="send-btn" id="sendBtn">
+                        <img src="./assets/default/typing/send_btn.png" alt="发送" class="default-icon">
+                        <img src="./assets/default/typing/send_btn2.png" alt="发送激活" class="active-icon">
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="hint" id="hint">按 Enter 键继续</div>
+
+    <script>
+        const artboard1 = document.getElementById('artboard1');
+        const artboard2 = document.getElementById('artboard2');
+        const inputPanel = document.getElementById('inputPanel');
+        const q1Hint = document.getElementById('q1Hint');
+        const q2Hint = document.getElementById('q2Hint');
+        const q3Hint = document.getElementById('q3Hint');
+        const hint = document.getElementById('hint');
+        const inputField = document.getElementById('inputField');
+        const sendBtn = document.getElementById('sendBtn');
+        const chatPanel = document.getElementById('chatPanel');
+        const chatContent = document.getElementById('chatContent');
+        const userMessage = document.getElementById('userMessage');
+        const aiResponse = document.getElementById('aiResponse');
+        const actionBar = document.getElementById('actionBar');
+        const bottomInput = document.getElementById('bottomInput');
+        const inputRipple = document.getElementById('inputRipple');
+        let currentArtboard = 1;
+
+        // 打字机效果函数
+        function typeWriter(element, html, speed = 30) {
+            return new Promise((resolve) => {
+                element.innerHTML = '';
+                let i = 0;
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+                const text = tempDiv.innerText;
+
+                function type() {
+                    if (i < text.length) {
+                        // 简化版：直接使用原HTML结构，逐字显示
+                        element.innerHTML = html.substring(0, Math.floor((i / text.length) * html.length));
+
+                        i++;
+
+                        // 自动滚动到底部
+                        chatContent.scrollTop = chatContent.scrollHeight;
+
+                        setTimeout(type, speed);
+                    } else {
+                        element.innerHTML = html;
+                        resolve();
+                    }
+                }
+
+                type();
+            });
+        }
+
+        // 监听输入框变化，切换发送按钮图标
+        inputField.addEventListener('input', function() {
+            if (inputField.value.length > 0) {
+                sendBtn.classList.add('active');
+            } else {
+                sendBtn.classList.remove('active');
+            }
+        });
+
+        // 发送消息函数
+        function sendMessage() {
+            const query = inputField.value.trim();
+            if (query) {
+                // 显示对话面板
+                userMessage.textContent = query;
+                chatPanel.classList.add('show');
+
+                // 隐藏输入框和提示
+                inputPanel.style.opacity = '0';
+                q1Hint.classList.remove('show');
+                q2Hint.classList.remove('show');
+                q3Hint.classList.remove('show');
+
+                // 清空输入框
+                inputField.value = '';
+                sendBtn.classList.remove('active');
+
+                // 5秒后开始打字机效果
+                setTimeout(() => {
+                    aiResponse.classList.add('loaded');
+
+                    const responseHTML = `
+                        <p>这里给你准备了 3 种委婉、专业、不甩锅、不慌的说法，直接复制发给老板就行：</p>
+
+                        <h3>1. 版本 1（稳重正式，最稳妥）</h3>
+                        <p>老板，目前项目发版相关的资源协调还未完全到位，为了保证上线质量和稳定性，我们评估后建议将原计划的发版时间适当延后。</p>
+                        <p>我们会同步加快资源推进与风险排查，尽快给出明确的新排期，确保最终上线效果可控。</p>
+
+                        <h3>2. 版本 2（偏技术、客观）</h3>
+                        <p>老板，受当前资源条件限制，按原计划发版存在一定风险，可能影响整体质量。</p>
+                        <p>为避免线上问题，我们建议延期发布，团队会抓紧补齐资源、完善验证，第一时间同步最新进度。</p>
+
+                        <h3>3. 版本 3（简洁干练，适合微信）</h3>
+                        <p>老板，受当前资源条件限制，按原计划发版存在一定风险，可能影响整体质量。为避免线上问题，我们建议延期发布，团队会抓紧补齐资源、完善验证，第一时间同步最新进度。</p>
+                    `;
+
+                    // 开始打字机效果
+                    typeWriter(aiResponse, responseHTML, 20).then(() => {
+                        // 显示操作栏和底部输入框
+                        actionBar.classList.add('show');
+                        bottomInput.classList.add('show');
+                        // 调整面板padding为输入框留出空间
+                        chatPanel.classList.add('with-input');
+                        // 滚动到底部显示操作栏
+                        setTimeout(() => {
+                            chatContent.scrollTop = chatContent.scrollHeight;
+                        }, 100);
+                    });
+                }, 5000);
+            }
+        }
+
+        // 点击发送按钮
+        sendBtn.addEventListener('click', sendMessage);
+
+        // Enter键发送
+        inputField.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // 监听键盘事件
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' && currentArtboard === 1) {
+                // 切换到输入条画板
+                currentArtboard = 2;
+                artboard1.classList.remove('active');
+                artboard2.classList.add('active');
+                hint.classList.add('hidden');
+
+                // 触发水波效果
+                inputRipple.classList.add('active');
+
+                // 延迟触发输入框滑入动画
+                setTimeout(() => {
+                    inputPanel.classList.add('active');
+
+                    // 输入框滑入完成后，停止水波效果，然后依次显示 q1, q2, q3
+                    setTimeout(() => {
+                        // 停止水波效果（等两侧光带播完：0.8s延迟 + 1s动画）
+                        setTimeout(() => {
+                            inputRipple.classList.remove('active');
+                        }, 1800);
+
+                        // 自动聚焦输入框
+                        inputField.focus();
+
+                        // 显示提示
+                        q1Hint.classList.add('show');
+
+                        setTimeout(() => {
+                            q2Hint.classList.add('show');
+
+                            setTimeout(() => {
+                                q3Hint.classList.add('show');
+                            }, 500);
+                        }, 500);
+                    }, 300);
+                }, 100);
+            }
+        });
+
+        // 响应式缩放
+        function scaleArtboards() {
+            const scaleX = window.innerWidth / 1600;
+            const scaleY = window.innerHeight / 1000;
+            const scale = Math.min(scaleX, scaleY, 1);
+
+            document.querySelectorAll('.artboard').forEach(artboard => {
+                if (scale < 1) {
+                    artboard.style.transform = `scale(${scale})`;
+                } else {
+                    artboard.style.transform = 'scale(1)';
+                }
+            });
+        }
+
+        scaleArtboards();
+        window.addEventListener('resize', scaleArtboards);
+    </script>
+</body>
+</html>
