@@ -1,882 +1,1803 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <title>玲珑台 感知模块出现动效</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>天禧AI - 主页</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-    body {
-      width: 100vw; height: 100vh;
+    html, body {
+      width: 100%;
+      height: 100%;
       overflow: hidden;
-      font-family: -apple-system, 'Microsoft YaHei', sans-serif;
-      background: #000;
-      user-select: none;
+      background: #0b0b0c;
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Noto Sans SC',
+                   'Microsoft YaHei', sans-serif;
     }
 
-    /* ── 桌面壁纸（真实截图） ── */
-    #wallpaper {
-      position: fixed; inset: 0; z-index: 0;
-      background: url('desk.png') center center / cover no-repeat;
-    }
-
-    /* ── WebGL 水波纹层 ── */
-    #ripple-canvas {
-      position: fixed; inset: 0; z-index: 10;
-      pointer-events: none;
-      opacity: 0;
-    }
-
-    /* ── 玲珑台整体容器：固定宽度，居中，永不变化 ── */
-    #lingtai-clip {
+    /* ── 全页背景（浏览器外壳截图） ── */
+    .bg-shell {
       position: fixed;
-      top: 0; left: 50%; transform: translateX(-50%);
-      z-index: 20;
-      width: 450px;
-      height: 188px;
-      clip-path: inset(-300px -40px 0 -40px);
-    }
-
-    /* 滑入容器：只做 translateY，宽高固定不变 */
-    #lingtai-wrap {
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 188px;
-      transform: translateY(-100%);
-      transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    #lingtai-wrap.show { transform: translateY(0); }
-
-    /* 两态绝对叠放，都相对 wrap 顶部居中 */
-    #phase1, #phase2 {
-      position: absolute;
-      top: 0;
-      left: 50%; transform: translateX(-50%);
-    }
-
-    /* ── 共享背景卡片：从胶囊生长到展开状态 ── */
-    #card-shell {
-      position: absolute;
-      top: 10px;                  /* 固定顶部间距 */
-      left: 50%; transform: translateX(-50%);
-      /* 初始：胶囊尺寸 */
-      width: 246px; height: 56px;
-      border-radius: 28px;
-      padding: 1px;
-      background: linear-gradient(90deg,
-        rgba(255,178,102,0.5) 0%,
-        rgba(128,149,255,0.5) 33%,
-        rgba(156,109,255,0.5) 66%,
-        rgba(255,116,238,0.5) 100%);
-      transition:
-        width  0.5s cubic-bezier(0.16, 1, 0.3, 1),
-        height 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-        border-radius 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      inset: 0;
+      background: url('bg.png') center / cover no-repeat;
+      pointer-events: none;
       z-index: 0;
     }
-    #card-shell.expanded {
-      width: 430px; height: 178px;
-      border-radius: 20px;
-    }
-    #card-shell-inner {
-      width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      /* 内层圆角跟随外层 */
-      border-radius: inherit;
-      transition: border-radius 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    #card-shell.expanded #card-shell-inner {
-      border-radius: inherit;
+    body.dual-mode .bg-shell {
+      background-image: url('bg2.png');
     }
 
-    /* 第一态：透明背景，只负责内容定位 */
-    #phase1 {
-      width: 246px; height: 56px;
-      position: absolute;
-      top: 10px; left: 50%; transform: translateX(-50%);
-      opacity: 1;
-      transition: opacity 0.35s ease;
-      pointer-events: auto;
-      z-index: 1;
+    /* ── 内容区（覆盖在背景黑色大区域上）── */
+    /* bg.png 中侧边栏约 80px，顶栏约 55px（按 2400x1540 原图） */
+    .content-area {
+      position: fixed;
+      left: 80px;
+      top: 55px;
+      right: 0;
+      bottom: 0;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0;
+      overflow-y: auto;
+    }
+    .content-area::-webkit-scrollbar { display: none; }
+
+    /* 宽度容器 */
+    .content-inner {
+      width: 838px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding-top: 88px;
+    }
+
+    /* ── 标题 ── */
+    .hero-title {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px; /* 标题距下方 Feature 图片 20px */
+    }
+    .hero-logo {
+      width: 46px;
+      height: 46px;
+      flex-shrink: 0;
+      display: block;
+      object-fit: contain;
+    }
+    .hero-title-text {
+      font-size: 30px;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+    }
+
+    /* ── Tab 导航（图片） ── */
+    .tab-bar {
+      margin-bottom: 10px; /* Feature 图片距输入框 10px */
+      margin-left: -20px;
+    }
+    .tab-bar img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* ── 输入框（彩虹光圈） ── */
+    .input-wrap {
+      width: 100%;
+      max-width: 838px;
+      position: relative;
+      margin-bottom: 18px;
+    }
+
+    /* 彩虹渐变边框层 —— 默认态（无超能）*/
+    .input-glow {
+      position: relative;
+      border-radius: 18px;
+      padding: 1.5px;
+      background: linear-gradient(
+        125deg,
+        #39ff14 0%, #00e5ff 18%, #651fff 36%,
+        #e040fb 50%, #ff1744 64%, #ff6d00 78%,
+        #ffd600 92%, #39ff14 100%
+      );
+      background-size: 200% 200%;
+      animation: gradientShift 4s ease infinite;
+      box-shadow:
+        0 0 18px rgba(57,255,20,.18),
+        0 0 36px rgba(224,64,251,.14),
+        0 0 56px rgba(255,23,68,.10),
+        0 0 80px rgba(101,31,255,.08);
+      transition: box-shadow .4s, background .4s;
+    }
+    /* 超能激活态：#8AD8FF 流光边框 + #0088FF 弥散投影 */
+    .input-glow.active {
+      background: linear-gradient(
+        125deg,
+        #8AD8FF 0%, #62E0FF 25%, #00AAFF 50%,
+        #8AD8FF 75%, #62E0FF 100%
+      );
+      background-size: 200% 200%;
+      animation: gradientShift 3s ease infinite;
+      box-shadow:
+        0 0 24px rgba(0,136,255,.55),
+        0 0 60px rgba(0,136,255,.28),
+        0 0 100px rgba(0,136,255,.12);
+    }
+    @keyframes gradientShift {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .input-inner {
+      background: #111214;
+      border-radius: 17px;
+      padding: 18px 20px 14px;
+      min-height: 148px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .input-field {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: rgba(255,255,255,.85);
+      font-size: 15px;
+      line-height: 1.6;
+      width: 100%;
+      resize: none;
+      font-family: inherit;
+      flex: 1;
+      min-height: 72px;
+    }
+    .input-field::placeholder { color: rgba(255,255,255,.28); }
+
+    .input-footer {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .input-actions { margin-left: auto; }
+    .mode-btns { display: flex; gap: 8px; align-items: center; }
+    .mode-btn {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      padding: 0 16px;
-      box-sizing: border-box;
+      height: 32px;
+      padding: 0;
+      cursor: pointer;
+      border: none;
       background: transparent;
+      transition: opacity .18s;
+      user-select: none;
     }
-    #phase1-inner {
-      display: contents; /* 透传布局 */
+    .mode-btn img {
+      height: 32px;
+      width: auto;
+      display: block;
+      flex-shrink: 0;
     }
-    #phase1 .ball-icon {
-      width: 28px; height: 28px; flex-shrink: 0;
+    .mode-btn:hover { opacity: .88; }
+    .super-mode {
+      justify-content: flex-start;
+      gap: 6px;
+      width: 81px;
+      padding: 0 13px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 999px;
+      background: rgba(255,255,255,.04);
+      color: rgba(255,255,255,.58);
+      overflow: hidden;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+      transition:
+        color .22s ease,
+        opacity .18s ease,
+        box-shadow .26s ease,
+        background .26s ease,
+        border-color .26s ease,
+        padding .26s ease,
+        width .26s ease;
     }
-    #phase1 .ball-icon img { width: 28px; height: 28px; display: block; }
-    #phase1 .phase1-text {
+    .super-mode.on {
+      width: 300px;
+      padding-right: 4px;
+      border-color: rgba(98,224,255,.38);
+      background:
+        linear-gradient(180deg, rgba(80,210,255,.24), rgba(0,136,255,.12)),
+        rgba(8,24,34,.82);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.16),
+        0 0 20px rgba(0,136,255,.18);
+      color: #8AD8FF;
+    }
+    .super-mode-icon {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+      transition: transform .26s ease, filter .26s ease;
+    }
+    .super-mode.on .super-mode-icon {
+      transform: scale(1.06);
+      filter: drop-shadow(0 0 8px rgba(98,224,255,.65));
+    }
+    .super-mode-label {
       font-size: 13px;
-      color: rgba(255,255,255,0.9);
+      font-weight: 600;
+      letter-spacing: .2px;
+      line-height: 1;
       white-space: nowrap;
-      font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
-      letter-spacing: 0.2px;
+    }
+    .super-mode-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 32px;
+      max-width: 0;
+      opacity: 0;
+      transform: translateX(-6px);
+      overflow: hidden;
+      color: rgba(210,246,255,.88);
+      font-size: 12px;
+      line-height: 1;
+      white-space: nowrap;
+      user-select: none;
+      transition: max-width .28s ease, opacity .22s ease, transform .28s ease;
+    }
+    .super-mode.on .super-mode-status {
+      max-width: 258px;
+      opacity: 1;
+      transform: translateX(0);
+    }
+    .super-mode-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #62E0FF;
+      box-shadow: 0 0 10px rgba(98,224,255,.85);
+      flex-shrink: 0;
+    }
+    .super-mode-title {
+      font-weight: 500;
+      letter-spacing: .2px;
+    }
+    .super-mode-energy {
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: rgba(98,224,255,.14);
+      border: 1px solid rgba(98,224,255,.2);
+      color: #8AD8FF;
+      font-weight: 600;
+      flex-shrink: 0;
+      display: inline-block;
+    }
+
+    .agent-mode {
+      justify-content: flex-start;
+      gap: 6px;
+      padding: 0 13px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 999px;
+      background: rgba(255,255,255,.04);
+      color: rgba(255,255,255,.58);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+      transition: background .18s, border-color .18s, color .18s;
+    }
+    .agent-mode:hover {
+      background: rgba(255,255,255,.07);
+      border-color: rgba(255,255,255,.2);
+      color: rgba(255,255,255,.8);
+    }
+
+    .input-actions { display: flex; align-items: center; gap: 14px; }
+    .act-icon {
+      color: rgba(255,255,255,.38);
+      cursor: pointer;
+      transition: color .18s;
+      display: flex;
+    }
+    .act-icon:hover { color: rgba(255,255,255,.75); }
+
+    .send-btn {
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+      display: block;
+      flex-shrink: 0;
+      transition: opacity .18s;
+    }
+    .send-btn:hover { opacity: .8; }
+
+    /* ── 底部卡片图片（默认态） ── */
+    .cards-img {
+      width: 100%;
+      display: block;
+      margin-top: auto;
+    }
+
+    /* ── 超能卡片区 ── */
+    .super-cards-wrap {
+      width: 100%;
+      display: none;
+      flex-direction: column;
+      gap: 0;
+      margin-top: auto;
+      padding-bottom: 30px;
+    }
+    .super-cards-wrap.visible { display: flex; }
+
+    .super-cards-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255,255,255,.45);
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+    .super-cards-label svg { opacity: .6; }
+
+    .super-cards-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      width: 100%;
+    }
+
+    .super-card {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity .45s ease, transform .45s ease;
+      cursor: pointer;
+      flex: 1;
+    }
+    .super-card.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .super-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 14px;
+    }
+    /* ══ 双屏视图 ══ */
+    .dual-view {
+      display: none;
+      position: fixed;
+      left: 80px;
+      top: 55px;
+      right: 0;
+      bottom: 0;
+      z-index: 20;
+    }
+    .dual-view.active {
+      display: flex;
+      pointer-events: all;
+      animation: dualOpen .42s cubic-bezier(.22,.8,.36,1) forwards;
+    }
+    @keyframes dualOpen {
+      0%   { opacity: 0; clip-path: inset(0 100% 0 0 round 0px); }
+      100% { opacity: 1; clip-path: inset(0 0% 0 0 round 0px); }
+    }
+
+    /* 左侧从左推入 */
+    .dual-left {
+      width: 420px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid rgba(255,255,255,.08);
+      transform: translateX(-32px);
+      opacity: 0;
+      animation: none;
+    }
+    .dual-view.active .dual-left {
+      animation: slideInLeft .48s cubic-bezier(.22,.8,.36,1) .05s forwards;
+    }
+    @keyframes slideInLeft {
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* 右侧从右推入 */
+    .dual-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform: translateX(32px);
+      opacity: 0;
+    }
+    .dual-view.active .dual-right {
+      animation: slideInRight .48s cubic-bezier(.22,.8,.36,1) .08s forwards;
+    }
+    @keyframes slideInRight {
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .chat-messages::-webkit-scrollbar { display: none; }
+
+    /* 用户气泡 */
+    .bubble-user {
+      align-self: flex-end;
+      max-width: 88%;
+      background: rgba(255,255,255,.12);
+      border: none;
+      border-radius: 14px 4px 14px 14px;
+      padding: 10px 16px;
+      min-height: 46px;
+      display: flex;
+      align-items: center;
+      color: rgba(255,255,255,.88);
+      font-size: 14px;
+      line-height: 26px;
+    }
+
+    /* ── AI 链路样式 ── */
+    .bubble-ai {
+      align-self: flex-start;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    /* 深度思考 / 画布操作 等元信息行 */
+    .chain-meta {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12.5px;
+      color: rgba(255,255,255,.32);
+      padding: 5px 0;
+      cursor: default;
+    }
+    .chain-meta svg { flex-shrink: 0; opacity: .7; }
+    .chain-meta.step { color: rgba(255,255,255,.38); }
+    .chain-meta.canvas { color: rgba(255,255,255,.38); }
+
+    /* 正文段落 */
+    .chain-text {
+      font-size: 14px;
+      color: rgba(255,255,255,.82);
+      line-height: 1.75;
+      padding: 6px 0 10px;
+    }
+    /* 深度思考流光效果 —— 柔和扫光 */
+    .chain-meta.think {
+      color: rgba(255,255,255,.32);
+    }
+    .chain-meta.think.shimmering {
+      background: linear-gradient(
+        100deg,
+        rgba(255,255,255,.28) 0%,
+        rgba(255,255,255,.34) 30%,
+        rgba(255,255,255,.72) 45%,
+        rgba(255,255,255,.86) 50%,
+        rgba(255,255,255,.72) 55%,
+        rgba(255,255,255,.34) 70%,
+        rgba(255,255,255,.28) 100%
+      );
+      background-size: 260% 100%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: textShimmer 3.6s cubic-bezier(.42,0,.18,1) infinite;
+      will-change: background-position;
+    }
+    .chain-meta.think.shimmering svg {
+      opacity: .44;
+      flex-shrink: 0;
+    }
+    @keyframes textShimmer {
+      0%   { background-position: 150% 0; }
+      68%  { background-position: -70% 0; }
+      100% { background-position: -70% 0; }
+    }
+    .chain-code {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 12px;
+      color: rgba(255,255,255,.55);
+      font-family: 'SF Mono', 'Menlo', monospace;
+      line-height: 1.7;
+      margin: 4px 0 10px;
+    }
+
+    /* 操作按钮行 */
+    .bubble-actions {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 14px;
+      padding: 4px 0 8px;
+    }
+    .bubble-action-btn {
+      color: rgba(255,255,255,.25);
+      cursor: pointer;
+      transition: color .15s;
+      display: flex;
+      flex-shrink: 0;
+    }
+    .bubble-action-btn:hover { color: rgba(255,255,255,.6); }
+
+    /* 双屏输入框 */
+    .dual-input-wrap {
+      padding: 12px 16px 16px;
+      flex-shrink: 0;
+    }
+    .dual-input-glow {
+      border-radius: 16px;
+      padding: 1.5px;
+      background: linear-gradient(125deg,#8AD8FF 0%,#62E0FF 25%,#00AAFF 50%,#8AD8FF 75%,#62E0FF 100%);
+      background-size: 200% 200%;
+      animation: gradientShift 3s ease infinite;
+      box-shadow: 0 0 20px rgba(0,136,255,.45), 0 0 50px rgba(0,136,255,.2);
+    }
+    .dual-input-inner {
+      background: #111214;
+      border-radius: 15px;
+      padding: 14px 16px 10px;
+      min-height: 110px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .dual-input-field {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: rgba(255,255,255,.85);
+      font-size: 14px;
+      line-height: 1.6;
+      width: 100%;
+      resize: none;
+      font-family: inherit;
+      flex: 1;
+      min-height: 48px;
+    }
+    .dual-input-field::placeholder { color: rgba(255,255,255,.28); }
+    .dual-input-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 8px;
+    }
+
+    /* 双屏关闭动画 */
+    .dual-view.closing {
+      animation: dualClose .32s cubic-bezier(.4,0,.6,1) forwards;
+    }
+    @keyframes dualClose {
+      to { opacity: 0; clip-path: inset(0 100% 0 0 round 0px); }
+    }
+
+    /* 右侧结果区 */
+    .dual-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform: translateX(32px);
+      opacity: 0;
+    }
+    .dual-view.active .dual-right {
+      animation: slideInRight .48s cubic-bezier(.22,.8,.36,1) .08s forwards;
+    }
+    @keyframes slideInRight {
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .result-tabs {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 0 16px;
+      height: 44px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      flex-shrink: 0;
+    }
+    .result-tab {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: rgba(255,255,255,.4);
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+    .result-tab:hover { color: rgba(255,255,255,.7); }
+    .result-tab.active {
+      color: #fff;
+      background: rgba(255,255,255,.07);
+    }
+    .result-tab-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .close-tag {
+      font-size: 12px;
+      color: rgba(255,255,255,.4);
+      cursor: pointer;
+    }
+    .close-tag:hover { color: rgba(255,255,255,.7); }
+
+    .result-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+    }
+    .result-body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle, rgba(255,255,255,.10) 1.2px, transparent 1.4px) 0 0 / 32px 32px;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .result-body > * {
+      position: relative;
+      z-index: 1;
+    }
+    .result-body::-webkit-scrollbar { display: none; }
+
+    .result-thinking {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .thinking-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: rgba(255,255,255,.35);
+    }
+    .thinking-line svg {
+      animation: spin-slow 1.5s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin-slow { to { transform: rotate(360deg); } }
+
+    .result-canvas {
+      flex: 1;
+      border-radius: 14px;
+      background: #111214;
+      border: 1px solid rgba(255,255,255,.07);
+      min-height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,.15);
+      font-size: 13px;
       position: relative;
       overflow: hidden;
     }
-
-    /* 流光扫过动画 */
-    @keyframes shimmer-reveal {
-      0%   { filter: blur(6px); }
-      100% { filter: blur(0px); }
-    }
-    @keyframes shimmer-sweep {
-      0%   { transform: translateX(-100%); }
-      100% { transform: translateX(250%); }
-    }
-
-    #phase1 .phase1-text.reveal {
-      animation: shimmer-reveal 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    }
-    #phase1 .phase1-text.reveal::after {
-      content: '';
+    /* loading 视频居中 —— 缩小 20% */
+    #canvas-loading {
       position: absolute;
-      top: -20%; left: 0;
-      width: 40%; height: 140%;
-      background: linear-gradient(90deg,
-        transparent 0%,
-        rgba(255,255,255,0.35) 50%,
-        transparent 100%);
-      animation: shimmer-sweep 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-      pointer-events: none;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    #phase1 img[src="lingtai.png"] { display: none; }
-    #phase1.hidden {
-      opacity: 0;
-      pointer-events: none;
+    #canvas-loading video {
+      width: 80%;
+      height: 80%;
+      object-fit: contain;
     }
 
-    /* ── 第二态：透明背景，只负责内容 ── */
-    #phase2 {
-      width: 450px; height: 178px;
+    .canvas-panel {
       position: absolute;
-      top: 10px; left: 50%; transform: translateX(-50%);
-      opacity: 0;
-      transition: opacity 0.4s ease 0.15s;
-      pointer-events: none;
-      background: transparent;
-      z-index: 1;
-      overflow: visible;
+      inset: 0;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
     }
-    #phase2.show {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    #phase2-inner {
-      width: 100%; height: 100%;
-      position: relative;
-      background: transparent;
-    }
-    #phase2::before { display: none; }
-    #phase2 .concave-right { display: none; }
+    .canvas-panel::-webkit-scrollbar { display: none; }
 
-    /* 底部光晕 */
-    #phase2 .glow-bottom {
-      position: absolute;
-      bottom: 0; left: 0; right: 0; height: 60px;
-      border-radius: 0 0 19px 19px;
-      background: linear-gradient(90deg,
-        rgba(255,140,80,0.25) 0%,
-        rgba(130,200,250,0.25) 50%,
-        rgba(70,80,255,0.25) 100%);
-      filter: blur(8px);
-      pointer-events: none;
-    }
-
-    /* 各内容行：绝对叠在底板上，初始透明 */
-    #phase2 .aui-row {
-      position: absolute; left: 50%; transform: translateX(-50%) translateY(-8px);
-      opacity: 0;
-      transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-                  transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    #phase2 .aui-row.visible {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-    #phase2 .aui-row img { display: block; }
-
-    /* 每行的位置和尺寸（原图 2x，显示减半） */
-    #phase2-title {
-      position: absolute;
-      top: 14px; left: 26px;
-      display: flex; align-items: center; gap: 8px;
-      opacity: 0;
-      transition: opacity 0.35s ease;
-    }
-    #phase2-title .ball-icon { width: 24px; height: 24px; flex-shrink: 0; }
-    #phase2-title .ball-icon img { width: 24px; height: 24px; display: block; }
-    #phase2-title .title-text {
-      font-size: 12px; color: rgba(255,255,255,0.72);
-      white-space: nowrap;
-      font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
-    }
-    #phase2-title.visible { opacity: 1; }
-
-    #row-device  { top: 48px;  width: 314px; }
-    #row-device img  { width: 314px; height: 40px; }
-    #row-meeting { top: 87px;  width: 314px; }
-    #row-meeting img { width: 314px; height: 36px; }
-    /* 分隔线：设备调优底边88px，会议纪要顶87px，取中间 */
-    #row-divider { top: 92px; width: 314px; opacity: 0; transition: opacity 0.4s ease; }
-    #row-divider img { width: 314px; height: 1px; display: block; }
-    #phase2.show #row-divider { opacity: 0.5; }
-    #row-btns    { top: 129px; width: 354px; }
-    #row-btns img { display: none; }
-    /* 真实按钮组 */
-    #row-btns .btn-group {
-      display: flex; gap: 12px;
-      width: 354px;
-    }
-    #row-btns .btn-ignore,
-    #row-btns .btn-confirm {
-      width: 171px; height: 30px;
-      border-radius: 15px;
-      border: none; cursor: pointer;
-      font-size: 13px;
-      font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    /* 底部工具栏 */
+    .canvas-toolbar {
       flex-shrink: 0;
-      transform: scale(1);
-      transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1);
+      height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border-top: 1px solid rgba(255,255,255,.06);
     }
-    #row-btns .btn-ignore:active,
-    #row-btns .btn-confirm:active {
-      transform: scale(0.92);
-      transition: transform 0.08s ease;
-    }
-    #row-btns .btn-ignore {
-      background: rgba(255,255,255,0.08);
-      box-shadow: inset 0 0 0 0.5px rgba(255,255,255,0.16);
-      color: rgba(255,255,255,0.8);
-    }
-    #row-btns .btn-confirm {
-      background: #ffffff;
-      color: #1a1a1a;
-      font-weight: 600;
-      transition: background 0.2s ease, box-shadow 0.2s ease;
-    }
-    #row-btns .btn-confirm:hover {
-      background: rgba(255,255,255,0.9);
-      box-shadow: 0 0 12px rgba(255,255,255,0.5), 0 0 24px rgba(255,255,255,0.2);
-    }
-
-
-    /* ── 浮动 logo+文字层（FLIP 动画用） ── */
-    #floating-header {
-      position: fixed;
-      z-index: 25;
-      display: flex; align-items: center; gap: 8px;
-      pointer-events: none;
-      /* 初始隐藏，由 JS 控制 */
-      opacity: 0;
-    }
-    #floating-header .f-ball {
-      flex-shrink: 0;
-    }
-    #floating-header .f-ball img {
+    .canvas-toolbar-img {
+      width: min(838px, 80%);
+      height: 61px;
+      object-fit: contain;
       display: block;
     }
-    #floating-header .f-text {
-      font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
-      white-space: nowrap;
-      position: relative;
+
+    /* 计划条目 */
+    .plan-item { font-size: 13px; color: rgba(255,255,255,.4); padding: 4px 0; }
+    .plan-item.done { color: rgba(74,222,128,.7); }
+
+    /* ── 设计文件面板 ── */
+    .df-wrap {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      background: #0f1117;
+      border-radius: 14px;
+      overflow: hidden;
+      font-family: 'SF Mono','Menlo','Consolas',monospace;
+      font-size: 12px;
+    }
+    .df-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 14px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      flex-shrink: 0;
+    }
+    .df-header-left { display: flex; align-items: center; gap: 6px; color: rgba(255,255,255,.6); font-size: 12px; }
+    .df-badge { font-size: 10px; color: rgba(255,255,255,.3); background: rgba(255,255,255,.06); padding: 1px 6px; border-radius: 3px; }
+    .df-header-right { font-size: 11px; color: rgba(99,102,241,.8); cursor: pointer; }
+    .df-body { flex: 1; display: flex; overflow: hidden; }
+    /* 左侧文件树 */
+    .df-sidebar {
+      width: 200px; flex-shrink: 0;
+      border-right: 1px solid rgba(255,255,255,.07);
+      display: flex; flex-direction: column;
+    }
+    .df-search {
+      margin: 8px 8px 4px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 11px; color: rgba(255,255,255,.3);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .df-file-list { flex: 1; overflow-y: auto; padding: 4px 0; }
+    .df-file-list::-webkit-scrollbar { display: none; }
+    .df-file-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 12px;
+      font-size: 11.5px; color: rgba(255,255,255,.45);
+      cursor: pointer; gap: 6px;
+    }
+    .df-file-item:hover { background: rgba(255,255,255,.04); }
+    .df-file-item.active {
+      background: rgba(99,102,241,.12);
+      color: rgba(255,255,255,.85);
+    }
+    .df-file-item-name { display: flex; align-items: center; gap: 6px; }
+    .df-check { color: #4ade80; font-size: 12px; }
+    .df-footer-count { padding: 6px 12px; font-size: 10px; color: rgba(255,255,255,.2); border-top: 1px solid rgba(255,255,255,.06); }
+    /* 右侧代码区 */
+    .df-code-area {
+      flex: 1; display: flex; flex-direction: column; overflow: hidden;
+    }
+    .df-code-topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 14px;
+      height: 34px; flex-shrink: 0;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .df-code-tab {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11.5px; color: rgba(255,255,255,.6);
+    }
+    .df-code-actions { display: flex; align-items: center; gap: 10px; font-size: 11px; color: rgba(255,255,255,.35); }
+    .df-code-actions span { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+    .df-code-actions span:hover { color: rgba(255,255,255,.7); }
+    .df-open-btn {
+      background: #4f46e5; color: #fff; font-size: 11px;
+      padding: 3px 10px; border-radius: 5px; cursor: pointer;
+    }
+    .df-code-scroll { flex: 1; overflow: auto; padding: 8px 0; }
+    .df-code-scroll::-webkit-scrollbar { width: 4px; }
+    .df-code-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 2px; }
+    .df-code-line {
+      display: flex; min-height: 18px; padding: 0 14px;
+      line-height: 18px; white-space: pre; font-size: 11.5px;
+    }
+    .df-code-line:hover { background: rgba(255,255,255,.03); }
+    .df-ln { width: 28px; flex-shrink: 0; color: rgba(255,255,255,.2); user-select: none; text-align: right; margin-right: 16px; }
+    .df-code-line.fold .df-ln { color: rgba(99,102,241,.5); }
+    /* 语法着色 */
+    .c-tag  { color: #e06c75; }
+    .c-attr { color: #d19a66; }
+    .c-str  { color: #98c379; }
+    .c-cm   { color: rgba(255,255,255,.25); font-style: italic; }
+    .c-prop { color: #56b6c2; }
+    .c-val  { color: #c678dd; }
+    .c-num  { color: #d19a66; }
+    .c-fn   { color: #61afef; }
+    .df-statusbar {
+      height: 22px; flex-shrink: 0;
+      border-top: 1px solid rgba(255,255,255,.06);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 14px;
+      font-size: 10px; color: rgba(255,255,255,.25);
+    }
+
+    /* ── 风格参考面板 ── */
+    .sr-wrap {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      background: #0f1117; border-radius: 14px; overflow: hidden;
+    }
+    .sr-filterbar {
+      display: flex; align-items: center; gap: 6px;
+      padding: 10px 14px; flex-shrink: 0;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      overflow-x: auto; flex-wrap: nowrap;
+    }
+    .sr-filterbar::-webkit-scrollbar { display: none; }
+    .sr-filter-label { font-size: 11px; color: rgba(255,255,255,.3); flex-shrink: 0; }
+    .sr-chip {
+      display: flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 999px; flex-shrink: 0;
+      font-size: 11px; color: rgba(255,255,255,.45);
+      background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);
+      cursor: pointer; transition: all .15s; white-space: nowrap;
+    }
+    .sr-chip:hover { border-color: rgba(255,255,255,.2); color: #fff; }
+    .sr-chip.active { background: rgba(99,102,241,.15); border-color: rgba(99,102,241,.4); color: #a5b4fc; }
+    .sr-chip-count { color: rgba(255,255,255,.3); }
+    .sr-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; flex-shrink: 0; }
+    .sr-search {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);
+      border-radius: 6px; padding: 4px 10px; font-size: 11px; color: rgba(255,255,255,.3); width: 130px;
+    }
+    .sr-btn {
+      display: flex; align-items: center; gap: 5px;
+      padding: 4px 12px; border-radius: 6px; font-size: 11px;
+      cursor: pointer; border: 1px solid rgba(255,255,255,.12);
+      color: rgba(255,255,255,.6); background: rgba(255,255,255,.05);
+    }
+    .sr-btn-primary { background: rgba(99,102,241,.2); border-color: rgba(99,102,241,.4); color: #a5b4fc; }
+    .sr-grid {
+      flex: 1; overflow-y: auto;
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 12px; padding: 12px 14px;
+    }
+    .sr-grid::-webkit-scrollbar { width: 4px; }
+    .sr-grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 2px; }
+    .sr-card {
+      background: #0d0f14; border: 1px solid rgba(255,255,255,.07);
+      border-radius: 10px; overflow: hidden; cursor: pointer;
+      transition: border-color .15s; display: flex; flex-direction: column;
+    }
+    .sr-card:hover { border-color: rgba(255,255,255,.2); }
+    .sr-card.selected { border-color: #6366f1; box-shadow: 0 0 0 1px #6366f1; }
+    .sr-preview { height: 110px; position: relative; overflow: hidden; flex-shrink: 0; }
+    .sr-preview-inner {
+      width: 100%; height: 100%; display: flex; flex-direction: column;
+      padding: 8px 10px; gap: 2px; font-family: 'Georgia', serif;
+    }
+    .sr-preview-toprow { display: flex; align-items: center; justify-content: space-between; font-size: 8px; opacity: .5; }
+    .sr-preview-brand { display: flex; align-items: center; gap: 4px; }
+    .sr-preview-badge { font-size: 7px; padding: 1px 4px; border-radius: 2px; }
+    .sr-preview-sys { font-size: 7px; letter-spacing: 1px; opacity: .45; margin: 2px 0; }
+    .sr-preview-h1 { font-size: 17px; font-weight: 700; line-height: 1.1; }
+    .sr-preview-h1 em { font-style: italic; }
+    .sr-preview-sub { font-size: 7px; opacity: .4; line-height: 1.4; margin-top: 2px; }
+    .sr-preview-stats { display: flex; gap: 10px; margin-top: auto; font-size: 7px; opacity: .35; }
+    .sr-preview-stat span { display: block; font-size: 9px; font-weight: 600; opacity: 1; }
+    .sr-preview-dots { display: flex; gap: 3px; align-items: center; margin-left: auto; }
+    .sr-preview-dot { width: 6px; height: 6px; border-radius: 50%; }
+    .sr-info { padding: 8px 10px 10px; display: flex; flex-direction: column; gap: 3px; }
+    .sr-name { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.85); }
+    .sr-desc { font-size: 10px; color: rgba(255,255,255,.35); line-height: 1.4;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .sr-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+    .sr-tag { font-size: 9px; color: rgba(255,255,255,.3); }
+    .sr-palette { display: flex; gap: 2px; }
+    .sr-pal { width: 12px; height: 12px; border-radius: 2px; }
+
+    .smarthome {
+      width: 100%; height: 100%;
+      background: #0f1117;
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      font-size: 12px;
+      color: rgba(255,255,255,.85);
+    }
+    .sh-topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 20px;
+      height: 48px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      flex-shrink: 0;
+    }
+    .sh-brand { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+    .sh-brand-icon {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: linear-gradient(135deg,#6366f1,#818cf8);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .sh-weather { display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,.55); font-size: 12px; }
+    .sh-weather span { display: flex; align-items: center; gap: 4px; }
+    .sh-clock { text-align: right; }
+    .sh-clock .time { font-size: 26px; font-weight: 300; color: #fff; line-height: 1; }
+    .sh-clock .date { font-size: 11px; color: rgba(255,255,255,.4); margin-top: 2px; }
+    .sh-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; display: inline-block; margin-right: 4px; }
+
+    .sh-body {
+      flex: 1; display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      padding: 12px 14px;
       overflow: hidden;
     }
-    #floating-header .f-text.shimmer {
-      animation: shimmer-reveal 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    .sh-card {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex; flex-direction: column; gap: 8px;
+      overflow: hidden;
     }
-    #floating-header .f-text.shimmer::after {
-      content: '';
-      position: absolute;
-      top: -20%; left: 0;
-      width: 40%; height: 140%;
-      background: linear-gradient(90deg,
-        transparent 0%,
-        rgba(255,255,255,0.35) 50%,
-        transparent 100%);
-      animation: shimmer-sweep 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-      pointer-events: none;
+    .sh-card-title {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 12px; font-weight: 500; color: rgba(255,255,255,.7);
     }
+    .sh-card-tag {
+      font-size: 10px; color: rgba(255,255,255,.3);
+      background: rgba(255,255,255,.06);
+      padding: 2px 6px; border-radius: 4px;
+    }
+    /* 环境数据格 */
+    .env-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .env-item {
+      background: rgba(255,255,255,.04); border-radius: 8px;
+      padding: 8px; display: flex; flex-direction: column; gap: 2px;
+    }
+    .env-label { font-size: 10px; color: rgba(255,255,255,.35); }
+    .env-val { font-size: 18px; font-weight: 300; color: #fff; line-height: 1.1; }
+    .env-val small { font-size: 10px; color: rgba(255,255,255,.5); }
+    .env-sub { font-size: 10px; color: #4ade80; }
+    .env-sub.warn { color: #60a5fa; }
+    /* 趋势图占位 */
+    .trend-wrap { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+    .trend-label { font-size: 10px; color: rgba(255,255,255,.3); display: flex; justify-content: space-between; }
+    .trend-chart {
+      flex: 1; min-height: 52px;
+      border-radius: 6px;
+      background: rgba(255,255,255,.02);
+      position: relative; overflow: hidden;
+    }
+    .trend-chart svg { width: 100%; height: 100%; }
 
-    /* ── 触发按钮（模拟感知事件） ── */
-    #trigger-btn {
-      position: fixed; bottom: 70px; right: 40px;
-      padding: 10px 20px;
-      background: rgba(124,140,248,0.2);
-      border: 1px solid rgba(124,140,248,0.5);
-      border-radius: 20px;
-      color: rgba(255,255,255,0.8);
-      font-size: 13px; cursor: pointer;
-      z-index: 30; backdrop-filter: blur(10px);
-      transition: background 0.2s;
+    /* 快捷场景 */
+    .scene-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; flex: 1; }
+    .scene-item {
+      background: rgba(255,255,255,.04); border-radius: 8px;
+      padding: 10px 6px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 6px; cursor: pointer; transition: background .15s;
+      font-size: 11px; color: rgba(255,255,255,.5);
     }
-    #trigger-btn:hover { background: rgba(124,140,248,0.35); }
+    .scene-item:hover { background: rgba(255,255,255,.08); }
+    .scene-item.active {
+      background: rgba(99,102,241,.2);
+      border: 1px solid rgba(129,140,248,.4);
+      color: #a5b4fc;
+    }
+    .scene-item.active .scene-icon { color: #818cf8; }
+    .scene-icon { font-size: 18px; }
+    .scene-tag { font-size: 9px; color: #4ade80; margin-bottom: -4px; }
 
-    /* ── 第三态：会议记录条 ── */
-    #phase3 {
-      position: absolute;
-      top: 10px; left: 50%; transform: translateX(-50%);
-      width: 314px; height: 58px;
-      opacity: 0;
-      pointer-events: none;
-      z-index: 1;
-      display: flex; align-items: center;
-      padding: 0 16px;
-      gap: 0;
-      box-sizing: border-box;
-      transition: opacity 0.3s ease;
+    /* 安防监控 */
+    .cam-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; flex: 1; }
+    .cam-item {
+      background: #0a0d14; border-radius: 6px;
+      display: flex; flex-direction: column; overflow: hidden;
     }
-    #phase3.show { opacity: 1; pointer-events: auto; }
+    .cam-screen {
+      flex: 1; min-height: 52px;
+      background: linear-gradient(160deg, #1a1f2e 0%, #0e1420 100%);
+      position: relative; display: flex; align-items: center; justify-content: center;
+    }
+    .cam-rec {
+      position: absolute; top: 5px; left: 5px;
+      background: #ef4444; color: #fff; font-size: 9px;
+      padding: 1px 4px; border-radius: 3px; display: flex; align-items: center; gap: 3px;
+    }
+    .cam-ts { position: absolute; top: 5px; right: 5px; font-size: 9px; color: rgba(255,255,255,.4); }
+    .cam-silhouette {
+      width: 60%; height: 60%; opacity: .12;
+    }
+    .cam-footer {
+      padding: 4px 6px; display: flex; align-items: center; justify-content: space-between;
+      font-size: 10px; color: rgba(255,255,255,.4);
+    }
+    .cam-online { width: 5px; height: 5px; border-radius: 50%; background: #4ade80; }
 
-    #phase3 .meet-icon {
-      width: 24px; height: 24px; flex-shrink: 0; margin-right: 8px;
+    .sh-bottombar {
+      height: 32px; flex-shrink: 0;
+      border-top: 1px solid rgba(255,255,255,.06);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 14px;
+      font-size: 10px; color: rgba(255,255,255,.3);
     }
-    #phase3 .meet-icon img { width: 24px; height: 24px; display: block; }
-
-    #phase3 .meet-label {
-      font-size: 13px; color: rgba(255,255,255,0.9);
-      font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
-      white-space: nowrap; margin-right: 6px;
-    }
-    #phase3 .meet-timer {
-      font-size: 13px; color: rgba(255,255,255,0.9);
-      font-family: -apple-system, 'Menlo', monospace;
-      white-space: nowrap; flex: 1;
-    }
-
-    /* 右侧三个圆形按钮 */
-    #phase3 .ctrl-btns {
-      display: flex; align-items: center; gap: 8px; flex-shrink: 0;
-    }
-    #phase3 .ctrl-btn {
-      width: 30px; height: 30px; border-radius: 50%;
-      border: none; cursor: pointer; padding: 0;
-      background: transparent;
-      display: flex; align-items: center; justify-content: center;
-      transform: scale(1);
-      transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-    #phase3 .ctrl-btn:active { transform: scale(0.88); transition: transform 0.08s ease; }
-    #phase3 .ctrl-btn img { width: 24px; height: 24px; display: block; }
-
-    #hint-text {
-      position: fixed; bottom: 110px; right: 40px;
-      font-size: 11px; color: rgba(255,255,255,0.3);
-      z-index: 30; text-align: right; pointer-events: none;
-    }
+    .sh-bottombar span { display: flex; align-items: center; gap: 6px; }
+    .sh-online-dot { width: 5px; height: 5px; border-radius: 50%; background: #4ade80; }
   </style>
 </head>
 <body>
 
-  <!-- 浮动 logo+文字（跨层 FLIP 动画） -->
-  <div id="floating-header">
-    <div class="f-ball"><img src="ball.gif" alt="" /></div>
-    <span class="f-text"></span>
-  </div>
+  <!-- 背景外壳 -->
+  <div class="bg-shell"></div>
 
-  <!-- 桌面真实截图 -->
-  <div id="wallpaper"></div>
+  <!-- ══ 首页视图 ══ -->
+  <div class="content-area" id="home-view">
+  <div class="content-inner">
 
-  <!-- 水波纹 WebGL 层 -->
-  <canvas id="ripple-canvas"></canvas>
+    <!-- 标题 -->
+    <div class="hero-title">
+      <img class="hero-logo" src="ball-dark.gif" alt="logo" />
+      <span class="hero-title-text">天禧AI，你的专属超能搭档</span>
+    </div>
 
-  <!-- 玲珑台顶部 -->
-  <div id="lingtai-clip">
-    <div id="lingtai-wrap">
-      <!-- 共享背景层，做生长动画 -->
-      <div id="card-shell">
-        <div id="card-shell-inner"></div>
-      </div>
-      <!-- 第一态内容 -->
-      <div id="phase1">
-        <div id="phase1-inner">
-          <div class="ball-icon" id="p1-ball"><img src="ball.gif" alt="" /></div>
-          <span class="phase1-text" id="p1-text">感知到您可能正在会议中</span>
-        </div>
-      </div>
-      <!-- 第二态内容 -->
-      <div id="phase2">
-        <div id="phase2-inner">
-          <div class="glow-bottom"></div>
-          <!-- phase2-title 由 floating-header 承载，此处仅做位置占位 -->
-          <div id="phase2-title" style="visibility:hidden;">
-            <div class="ball-icon" id="p2-ball"><img src="ball.gif" alt="" /></div>
-            <span class="title-text" id="p2-text">开启智能会议模式，体验更优哦~</span>
-          </div>
-          <div class="aui-row" id="row-device"> <img src="row-device.png"  alt="设备调优" /></div>
-          <div class="aui-row" id="row-divider"><img src="border.png" alt="" /></div>
-          <div class="aui-row" id="row-meeting"><img src="row-meeting.png" alt="会议纪要" /></div>
-          <div class="aui-row" id="row-btns">
-            <div class="btn-group">
-              <button class="btn-ignore">忽略</button>
-              <button class="btn-confirm">一键开启</button>
+    <!-- Tab 导航 -->
+    <div class="tab-bar">
+      <img src="Feature.png" alt="功能导航" />
+    </div>
+
+    <!-- 主输入框（彩虹光圈） -->
+    <div class="input-wrap">
+      <div class="input-glow">
+        <div class="input-inner">
+          <textarea class="input-field" rows="4"
+            placeholder="有什么我可以帮你的？"></textarea>
+          <div class="input-footer">
+            <div class="mode-btns">
+              <!-- 超能 -->
+              <div class="mode-btn super-mode off" id="btn-super" onclick="toggleSuper(this)">
+                <svg class="super-mode-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+                  <polygon points="13 2 4 14 12 14 11 22 20 10 12 10 13 2"/>
+                </svg>
+                <span class="super-mode-label">超能</span>
+                <span class="super-mode-status">
+                  <span class="super-mode-dot"></span>
+                  <span class="super-mode-title">超能模式已激活</span>
+                  <span class="super-mode-energy">剩余 5000 能量值</span>
+                </span>
+              </div>
+              <!-- 智能体 -->
+              <div class="mode-btn agent-mode off">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;">
+                  <circle cx="12" cy="8" r="4"/>
+                  <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                </svg>
+                <span style="font-size:13px;font-weight:600;letter-spacing:.2px;line-height:1;white-space:nowrap;">智能体</span>
+              </div>
+            </div>
+            <div class="input-actions">
+              <img src="btns.png" alt="操作按钮" style="height:28px;display:block;" />
+              <!-- 发送 -->
+              <img src="send_btn.png" alt="发送" title="发送" class="send-btn" id="home-send-btn" />
             </div>
           </div>
         </div>
       </div>
-      <!-- 第三态：会议记录条 -->
-      <div id="phase3">
-        <div class="meet-icon"><img src="meet-icon.png" alt="" /></div>
-        <span class="meet-label">会议记录</span>
-        <span class="meet-timer" id="meet-timer">00:00</span>
-        <div class="ctrl-btns">
-          <button class="ctrl-btn" id="btn-pause" title="暂停">
-            <img src="btn-pause.png" alt="暂停" />
-          </button>
-          <button class="ctrl-btn stop" id="btn-stop" title="停止">
-            <img src="btn-stop.png" alt="停止" />
-          </button>
-          <button class="ctrl-btn" id="btn-expand" title="展开">
-            <img src="btn-expand.png" alt="展开" />
-          </button>
+    </div>
+
+    <!-- 底部卡片图片（默认态） -->
+    <img class="cards-img" id="cards-default" src="Card.png" alt="内容卡片" />
+
+    <!-- 超能模式卡片 -->
+    <div class="super-cards-wrap" id="super-cards">
+      <div class="super-cards-label">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+        沉浸式场景推荐体验
+      </div>
+      <div class="super-cards-row">
+        <div class="super-card" id="sc1">
+          <img src="Card1.png" alt="精读论文写综述" />
+        </div>
+        <div class="super-card" id="sc2">
+          <img src="Card2.png" alt="设计智能大屏" />
+        </div>
+        <div class="super-card" id="sc3">
+          <img src="Card3.png" alt="长文转汇报PPT" />
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- 模拟触发按钮 -->
-  <div id="hint-text">点击模拟感知触发</div>
-  <button id="trigger-btn">⚡ 触发感知事件</button>
+  </div><!-- /content-inner -->
+  </div><!-- /home-view -->
 
-<script>
-// ─────────────────────────────────────────────────────────────
-// 水波纹参数（对齐原始 config）
-// ─────────────────────────────────────────────────────────────
-const CFG = {
-  WAVELENGTH : 0.15,
-  DURATION   : 2.5,
-  FADE_DUR   : 0.3,
-  DECAY      : 2.0,
-  MAX_AMP    : 0.018,
-  RING_W     : 0.4,
-};
+  <!-- ══ 双屏视图 ══ -->
+  <div class="dual-view" id="dual-view">
 
-// ─────────────────────────────────────────────────────────────
-// WebGL 初始化
-// ─────────────────────────────────────────────────────────────
-const canvas = document.getElementById('ripple-canvas');
-const gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: false });
+    <!-- 左侧对话区 -->
+    <div class="dual-left">
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="dual-input-wrap">
+        <div class="dual-input-glow">
+          <div class="dual-input-inner">
+            <textarea class="dual-input-field" id="dual-input" placeholder="描述任务" rows="3"></textarea>
+            <div class="dual-input-footer">
+              <div class="mode-btns">
+                <div class="mode-btn off">
+                  <img src="智能体btn.png" alt="智能体" />
+                </div>
+              </div>
+              <div class="input-actions">
+                <img src="btns.png" alt="操作按钮" style="height:28px;display:block;" />
+                <img src="send_btn.png" alt="发送" class="send-btn" onclick="sendDual()" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-const VS = `
-  attribute vec2 a_pos;
-  varying vec2 v_uv;
-  void main(){
-    v_uv = a_pos * 0.5 + 0.5;
-    gl_Position = vec4(a_pos, 0.0, 1.0);
-  }
-`;
+    <!-- 右侧结果区 -->
+    <div class="dual-right">
+      <!-- 顶部 tab 栏 -->
+      <div class="result-tabs">
+        <div class="result-tab active">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          画布
+        </div>
+        <div class="result-tab">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          设计文件
+        </div>
+        <div class="result-tab">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          预览
+        </div>
+        <div class="result-tab">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="12" rx="2"/><path d="M8 21l4-6 4 6"/><path d="M9 9h4"/><path d="M15.5 6.5l2 2L13 13l-2.5.5.5-2.5 4.5-4.5z"/></svg>
+          风格参考
+        </div>
+        <div class="result-tab">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          计划
+        </div>
+        <div class="result-tab-right">
+          <span class="close-tag" onclick="closeDual()">关键设计决策 ●</span>
+        </div>
+      </div>
+      <!-- 内容区 -->
+      <div class="result-body">
+        <div class="result-thinking" id="result-thinking"></div>
+        <!-- 画布容器 -->
+        <div class="result-canvas" id="result-canvas">
+          <div id="canvas-loading">
+            <video id="loading-video" autoplay loop muted playsinline src="loading.mp4"></video>
+          </div>
+          <!-- 各 tab 内容面板 -->
+          <div class="canvas-panel" id="panel-canvas" style="display:none;"></div>
+          <div class="canvas-panel" id="panel-design" style="display:none;"></div>
+          <div class="canvas-panel" id="panel-preview" style="display:none;"></div>
+          <div class="canvas-panel" id="panel-style" style="display:none;"></div>
+          <div class="canvas-panel" id="panel-plan" style="display:none;flex-direction:column;align-items:flex-start;justify-content:flex-start;padding:24px;gap:10px;">
+            <div style="color:rgba(255,255,255,.6);font-size:13px;font-weight:500;">任务计划</div>
+            <div class="plan-item done">✓ 读取风格参考</div>
+            <div class="plan-item done">✓ 生成 HTML 结构</div>
+            <div class="plan-item done">✓ 实现三大模块</div>
+            <div class="plan-item done">✓ Canvas 质量检查</div>
+            <div class="plan-item done">✓ Nudge 控件配置</div>
+          </div>
+        </div>
+        <!-- 底部工具栏 -->
+        <div class="canvas-toolbar" id="canvas-toolbar" style="display:none;">
+          <img class="canvas-toolbar-img" src="tools.png" alt="画布工具条" />
+        </div>
+      </div>
+    </div>
 
-// 折射扭曲 shader
-const FS = `
-  precision highp float;
-  varying vec2 v_uv;
+  </div><!-- /dual-view -->
 
-  uniform sampler2D u_tex;
-  uniform vec2  u_origin;   // 波源 UV
-  uniform float u_time;
-  uniform float u_aspect;
-  uniform float u_wavelength;
-  uniform float u_duration;
-  uniform float u_decay;
-  uniform float u_max_amp;
-  uniform float u_ring_w;
-
-  void main(){
-    vec2 d = v_uv - u_origin;
-    d.x *= u_aspect;
-    float dist = length(d);
-
-    float diag = length(vec2(u_aspect, 1.0));
-    float wave_front = (u_time / u_duration) * diag;
-    float behind = wave_front - dist;
-
-    // 仅在波环范围内有效
-    float in_ring = step(0.0, behind) * step(wave_front - u_ring_w, dist);
-
-    // 振幅 = 最大值 × 距离衰减 × 正弦
-    float amp = u_max_amp
-      * exp(-u_decay * dist)
-      * sin(6.28318 * behind / u_wavelength)
-      * in_ring;
-
-    // 折射法线（指向波源外侧），修正宽高比
-    vec2 norm = (dist > 0.001) ? d / length(d) : vec2(0.0);
-    norm.x /= u_aspect;
-
-    vec2 sample_uv = clamp(v_uv + norm * amp, 0.0, 1.0);
-    vec4 color = texture2D(u_tex, sample_uv);
-
-    gl_FragColor = vec4(color.rgb, color.a);
-  }
-`;
-
-function mkShader(type, src){
-  const s = gl.createShader(type);
-  gl.shaderSource(s, src); gl.compileShader(s);
-  if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s));
-  return s;
-}
-const prog = gl.createProgram();
-gl.attachShader(prog, mkShader(gl.VERTEX_SHADER,   VS));
-gl.attachShader(prog, mkShader(gl.FRAGMENT_SHADER, FS));
-gl.linkProgram(prog); gl.useProgram(prog);
-
-// 全屏四边形
-const buf = gl.createBuffer();
-gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-  -1,-1,  1,-1,  -1,1,
-   1,-1,  1, 1,  -1,1,
-]), gl.STATIC_DRAW);
-const posLoc = gl.getAttribLocation(prog, 'a_pos');
-gl.enableVertexAttribArray(posLoc);
-gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
-
-// Uniform 位置
-const U = {
-  origin   : gl.getUniformLocation(prog, 'u_origin'),
-  time     : gl.getUniformLocation(prog, 'u_time'),
-  aspect   : gl.getUniformLocation(prog, 'u_aspect'),
-  wave     : gl.getUniformLocation(prog, 'u_wavelength'),
-  duration : gl.getUniformLocation(prog, 'u_duration'),
-  decay    : gl.getUniformLocation(prog, 'u_decay'),
-  maxAmp   : gl.getUniformLocation(prog, 'u_max_amp'),
-  ringW    : gl.getUniformLocation(prog, 'u_ring_w'),
-  tex      : gl.getUniformLocation(prog, 'u_tex'),
-};
-
-// ─────────────────────────────────────────────────────────────
-// 桌面截图 → WebGL 纹理
-// ─────────────────────────────────────────────────────────────
-const texture = gl.createTexture();
-
-// 用真实 desk.png 作为纹理
-const deskImg = new Image();
-deskImg.src = 'desk.png';
-
-function bakeDesktopTexture(){
-  const W = canvas.width, H = canvas.height;
-  const oc = document.createElement('canvas');
-  oc.width = W; oc.height = H;
-  const ctx = oc.getContext('2d');
-
-  // 以 cover 方式绘制真实桌面截图
-  if(deskImg.complete && deskImg.naturalWidth > 0){
-    const iw = deskImg.naturalWidth, ih = deskImg.naturalHeight;
-    const scale = Math.max(W / iw, H / ih);
-    const sw = iw * scale, sh = ih * scale;
-    ctx.drawImage(deskImg, (W - sw) / 2, (H - sh) / 2, sw, sh);
-  } else {
-    ctx.fillStyle = '#1a1035';
-    ctx.fillRect(0, 0, W, H);
-  }
-
-  gl.bindTexture(gl.TEXTURE_2D, texture);
-  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);   // 修正 Y 轴翻转
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, oc);
-  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-}
-
-function resize(){
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
-  gl.viewport(0, 0, canvas.width, canvas.height);
-  bakeDesktopTexture();
-}
-window.addEventListener('resize', resize);
-// 等图片加载完再初始化
-deskImg.onload = () => resize();
-deskImg.onerror = () => resize();
-resize();
-
-// ─────────────────────────────────────────────────────────────
-// 动效状态机
-// ─────────────────────────────────────────────────────────────
-let anim = null;
-
-/**
- * 启动水波纹，波源为玲珑台条中心（顶部居中，Y = 条高度/2 ≈ 28px）
- */
-function startRipple(){
-  if(anim) cancelAnimationFrame(anim.raf);
-
-  // 玲珑台条中心的 UV（顶部居中）
-  const originX = canvas.width  / 2;
-  const originY = 38;   // margin-top 10px + 胶囊高 56px 的中心
-  const uv = [
-    originX / canvas.width,
-    1.0 - originY / canvas.height,  // FLIP_Y 后 UV Y=0 在底部，顶部 = 1 - y/H
-  ];
-
-  canvas.style.opacity = '1';
-  bakeDesktopTexture();
-
-  anim = { t0: performance.now(), uv, raf: null };
-  drawFrame();
-}
-
-function drawFrame(){
-  if(!anim) return;
-  const elapsed = (performance.now() - anim.t0) / 1000;
-  const total   = CFG.DURATION + CFG.FADE_DUR;
-
-  // 整体淡出
-  if(elapsed >= CFG.DURATION){
-    const p = (elapsed - CFG.DURATION) / CFG.FADE_DUR;
-    canvas.style.opacity = String(Math.max(0, 1 - p));
-    if(elapsed >= total){ canvas.style.opacity = '0'; anim = null; return; }
-  }
-
-  gl.uniform2fv(U.origin,   anim.uv);
-  gl.uniform1f (U.time,     Math.min(elapsed, CFG.DURATION));
-  gl.uniform1f (U.aspect,   canvas.width / canvas.height);
-  gl.uniform1f (U.wave,     CFG.WAVELENGTH);
-  gl.uniform1f (U.duration, CFG.DURATION);
-  gl.uniform1f (U.decay,    CFG.DECAY);
-  gl.uniform1f (U.maxAmp,   CFG.MAX_AMP);
-  gl.uniform1f (U.ringW,    CFG.RING_W);
-
-  gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, texture);
-  gl.uniform1i(U.tex, 0);
-
-  gl.clearColor(0,0,0,0);
-  gl.clear(gl.COLOR_BUFFER_BIT);
-  gl.drawArrays(gl.TRIANGLES, 0, 6);
-
-  anim.raf = requestAnimationFrame(drawFrame);
-}
-
-// ─────────────────────────────────────────────────────────────
-// 玲珑台滑入 + 水波纹同步触发
-// ─────────────────────────────────────────────────────────────
-const lingtaiWrap = document.getElementById('lingtai-wrap');
-const phase1      = document.getElementById('phase1');
-const phase2      = document.getElementById('phase2');
-const cardShell   = document.getElementById('card-shell');
-const floatHdr    = document.getElementById('floating-header');
-const fBall       = floatHdr.querySelector('.f-ball img');
-const fText       = floatHdr.querySelector('.f-text');
-let shown = false;
-
-// 获取元素相对 viewport 的中心坐标
-function getRect(el) { return el.getBoundingClientRect(); }
-
-function resetFloat() {
-  floatHdr.style.transition = 'none';
-  floatHdr.style.opacity    = '0';
-  floatHdr.style.transform  = '';
-  fText.classList.remove('shimmer');
-}
-
-function flipToPhase2() {
-  // 1. 读取 phase1 的 ball 和 text 当前位置（FLIP: First）
-  const p1Ball = document.getElementById('p1-ball');
-  const p1Text = document.getElementById('p1-text');
-  const p2Ball = document.getElementById('p2-ball');
-  const p2Text = document.getElementById('p2-text');
-
-  const r1Ball = getRect(p1Ball);
-  const r1Text = getRect(p1Text);
-
-  // 2. 隐藏 phase1，显示 phase2 title 占位（先设透明）
-  phase1.classList.add('hidden');
-  cardShell.classList.add('expanded');
-
-  // 让 phase2 出现但 title 先隐藏，获取目标位置
-  phase2.style.opacity = '1';
-  phase2.style.pointerEvents = 'auto';
-  document.getElementById('phase2-title').style.opacity = '0';
-  // 分隔线随背景出现
-  const divider = document.getElementById('row-divider');
-  if(divider) divider.style.opacity = '0.5';
-
-  // FLIP: Last — 读取目标位置
-  const r2Ball = getRect(p2Ball);
-  const r2Text = getRect(p2Text);
-
-  // 3. 设置 floating-header 到 phase1 起始位置
-  floatHdr.style.transition = 'none';
-  floatHdr.style.opacity    = '1';
-
-  // logo 大小从 28→24px
-  fBall.style.width  = '28px';
-  fBall.style.height = '28px';
-  fBall.style.transition = 'none';
-
-  fText.textContent  = '感知到您可能正在会议中';
-  fText.style.fontSize  = '13px';
-  fText.style.color     = 'rgba(255,255,255,0.9)';
-  fText.style.letterSpacing = '0.2px';
-  fText.style.transition = 'none';
-  fText.classList.remove('shimmer');
-
-  // 定位到 phase1 ball 位置
-  floatHdr.style.left = r1Ball.left + 'px';
-  floatHdr.style.top  = r1Ball.top  + 'px';
-  floatHdr.style.transform = 'none';
-
-  // 4. 下一帧触发过渡（FLIP: Play）
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      const dur = '0.5s';
-      const ease = 'cubic-bezier(0.16, 1, 0.3, 1)';
-
-      // 计算需要移动的距离
-      const dx = r2Ball.left - r1Ball.left;
-      const dy = r2Ball.top  - r1Ball.top;
-      const scaleFrom = 28 / 24; // 从大变小
-
-      floatHdr.style.transition = `transform ${dur} ${ease}, opacity 0.3s ease`;
-      floatHdr.style.transform  = `translate(${dx}px, ${dy}px)`;
-
-      fBall.style.transition = `width ${dur} ${ease}, height ${dur} ${ease}`;
-      fBall.style.width  = '24px';
-      fBall.style.height = '24px';
-
-      // 文字直接切换
-      fText.style.transition = `font-size ${dur} ${ease}`;
-      fText.style.fontSize   = '12px';
-      fText.style.color      = 'rgba(255,255,255,0.72)';
-      fText.textContent = '开启智能会议模式，体验更优哦~';
-
-      // 5. 动画结束后：floating-header 留在原位，其余内容依次出现
-      setTimeout(() => {
-        if(!shown) return;
-
-        const els = [
-          document.getElementById('row-device'),
-          document.getElementById('row-meeting'),
-          document.getElementById('row-btns'),
-        ];
-        els.forEach((el, i) => {
-          setTimeout(() => { if(shown && el) el.classList.add('visible'); }, i * 300);
+  <script>
+    /* ── 超能模式切换 ── */
+    function toggleSuper(btn) {
+      const isOn = btn.classList.toggle('on');
+      btn.classList.toggle('off', !isOn);
+      const glow = document.querySelector('.input-glow');
+      glow.classList.toggle('active', isOn);
+      const defaultCards = document.getElementById('cards-default');
+      const superCards = document.getElementById('super-cards');
+      if (isOn) {
+        defaultCards.style.display = 'none';
+        superCards.classList.add('visible');
+        ['sc1','sc2','sc3'].forEach((id, i) => {
+          const el = document.getElementById(id);
+          el.classList.remove('show');
+          setTimeout(() => el.classList.add('show'), 80 + i * 120);
         });
-      }, 520);
+      } else {
+        ['sc1','sc2','sc3'].forEach(id => document.getElementById(id).classList.remove('show'));
+        setTimeout(() => {
+          superCards.classList.remove('visible');
+          defaultCards.style.display = 'block';
+        }, 200);
+      }
+    }
+
+    /* ── 首页发送 → 进入双屏 ── */
+    function sendQuery() {
+      const field = document.querySelector('.input-field');
+      const text = field.value.trim();
+      if (!text) return;
+
+      document.body.classList.add('dual-mode');
+      document.getElementById('home-view').style.display = 'none';
+      const dualView = document.getElementById('dual-view');
+      dualView.classList.add('active');
+
+      addUserBubble(text);
+      field.value = '';
+
+      setTimeout(() => simulateAI(8), 400);
+    }
+
+    /* ── 双屏内继续发送 ── */
+    function sendDual() {
+      const field = document.getElementById('dual-input');
+      const text = field.value.trim();
+      if (!text) return;
+      addUserBubble(text);
+      field.value = '';
+      setTimeout(() => simulateAI(8), 400);
+    }
+
+    /* 关闭双屏回首页 */
+    function closeDual() {
+      const dualView = document.getElementById('dual-view');
+      dualView.classList.add('closing');
+      dualView.addEventListener('animationend', () => {
+        dualView.classList.remove('active', 'closing');
+        document.body.classList.remove('dual-mode');
+        document.getElementById('home-view').style.display = '';
+        document.getElementById('chat-messages').innerHTML = '';
+        document.getElementById('result-canvas').innerHTML = '';
+        document.getElementById('result-thinking').innerHTML = '';
+      }, { once: true });
+    }
+
+    function addUserBubble(text) {
+      const msgs = document.getElementById('chat-messages');
+      const el = document.createElement('div');
+      el.className = 'bubble-user';
+      el.textContent = text;
+      msgs.appendChild(el);
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    function simulateAI(videoDuration) {
+      const totalMs = (videoDuration || 8) * 1000;
+      const msgs = document.getElementById('chat-messages');
+      const ai = document.createElement('div');
+      ai.className = 'bubble-ai';
+      msgs.appendChild(ai);
+
+      const ICON = {
+        think: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 3v9h-9"/></svg>`,
+        step:  `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+        canvas:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`,
+      };
+      const metaEl = (t,l) => `<div class="chain-meta ${t}">${ICON[t]||ICON.think}${l}</div>`;
+      const cvs    = (l)   => `<div class="chain-meta canvas">${ICON.canvas}${l}</div>`;
+
+      // 打字机：插入空 div，然后逐字填充，返回 Promise
+      function typeText(html, speedMs = 18) {
+        return new Promise(resolve => {
+          const div = document.createElement('div');
+          div.className = 'chain-text';
+          ai.appendChild(div);
+          // 把 html 里的标签剥出来，逐字符输出（保留 <br> <strong> 等）
+          const tmp = document.createElement('div');
+          tmp.innerHTML = html;
+          const full = tmp.innerHTML;
+          let i = 0;
+          // 逐字符输出，但跳过 HTML 标签整体输出
+          function tick() {
+            if (i >= full.length) { resolve(); return; }
+            if (full[i] === '<') {
+              const end = full.indexOf('>', i);
+              if (end >= 0) { i = end + 1; div.innerHTML = full.slice(0, i); } else { i++; }
+            } else {
+              i++;
+              div.innerHTML = full.slice(0, i);
+            }
+            msgs.scrollTop = msgs.scrollHeight;
+            setTimeout(tick, speedMs);
+          }
+          tick();
+        });
+      }
+
+      function addThink(label) {
+        ai.insertAdjacentHTML('beforeend', metaEl('think', label));
+        const el = ai.lastElementChild;
+        el.classList.add('shimmering');
+        return el;
+      }
+      function stopShimmer(el) { el.classList.remove('shimmering'); }
+
+      // 按比例分配时间节点，共 20 步，深度思考停留更长
+      // weights: think=9%, text/canvas/step=3%  (8 thinks × 9% + 12 others × 3% = 72%+36%=108% → normalize)
+      const weights = [9,3,3, 9,3,3, 9,3,3, 9,3, 9,3, 9,3,3, 9,3,3, 9,7];
+      const wSum = weights.reduce((a,b)=>a+b,0);
+      const delays = [];
+      let acc = 0;
+      weights.forEach(w => { delays.push(Math.round(acc)); acc += (w/wSum) * totalMs * 0.96; });
+
+      // 步骤序列：[延迟ms, 异步fn]
+      const steps = [
+        [delays[0],  async () => { lastThink = addThink('深度思考'); }],
+        [delays[1],  async () => { stopShimmer(lastThink); await typeText('我来为您设计这个智能家居中控大屏界面。这是一个典型的仪表板（dashboard）类任务，需要先进入设计规划阶段。'); }],
+        [delays[2],  async () => { ai.insertAdjacentHTML('beforeend', cvs('画布：进入设计计划模式')); }],
+        [delays[3],  async () => { lastThink = addThink('深度思考'); }],
+        [delays[4],  async () => { stopShimmer(lastThink); await typeText('用户选择了直接执行。让我先读取自动选中的风格参考，然后开始实现。'); }],
+        [delays[5],  async () => { ai.insertAdjacentHTML('beforeend', cvs('画布：读取设计素材')); }],
+        [delays[6],  async () => { lastThink = addThink('深度思考'); }],
+        [delays[7],  async () => { stopShimmer(lastThink); await typeText('已读取 Linear 风格参考。现在直接实现这个高保真智能家居中控大屏界面。'); }],
+        [delays[8],  async () => { ai.insertAdjacentHTML('beforeend', metaEl('step','查看 1 个步骤')); }],
+        [delays[9],  async () => { lastThink = addThink('深度思考'); }],
+        [delays[10], async () => { stopShimmer(lastThink); ai.insertAdjacentHTML('beforeend', metaEl('step','查看 1 个步骤')); }],
+        [delays[11], async () => { lastThink = addThink('深度思考'); }],
+        [delays[12], async () => { stopShimmer(lastThink); await typeText('HTML 文件已创建。接下来运行 Canvas 设计质量检查。'); }],
+        [delays[13], async () => { lastThink = addThink('深度思考'); }],
+        [delays[14], async () => { stopShimmer(lastThink); ai.insertAdjacentHTML('beforeend', metaEl('step','查看 1 个步骤')); }],
+        [delays[15], async () => { ai.insertAdjacentHTML('beforeend', cvs('画布质量检查')); }],
+        [delays[16], async () => { lastThink = addThink('深度思考'); }],
+        [delays[17], async () => { stopShimmer(lastThink); await typeText('Nudges 已设置。现在调用最终执行质量门控完成设计交付。'); }],
+        [delays[18], async () => { ai.insertAdjacentHTML('beforeend', metaEl('step','查看 1 个步骤')); }],
+        [delays[19], async () => {
+          lastThink = addThink('深度思考');
+          await new Promise(r => setTimeout(r, Math.round((weights[19]/wSum) * totalMs * 0.4)));
+          stopShimmer(lastThink);
+          ai.insertAdjacentHTML('beforeend', cvs('画布：完成设计执行'));
+          await typeText(`<strong>智能家居中控大屏界面已设计完成，基于 Linear 风格的高保真深色主题仪表板。</strong><br><br>界面包含三大核心模块：<br><br><strong>环境看板</strong> — 四格数据卡片展示温度、湿度、PM2.5 和 CO₂ 浓度，底部配有 24 小时温湿度双曲线趋势图，带渐变填充和当前时刻标记。<br><br><strong>快捷场景</strong> — 六宫格场景卡片（回家、离家、睡眠、观影、起床、会客），支持点击切换激活状态，激活时带有品牌色光晕和图标渐变效果。<br><br><strong>安防监控</strong> — 四路监控实时画面（客厅、门廊、主卧、车库），每路带红色 REC 录制标识、实时时间戳和在线状态点，画面底层用 CSS 渐变模拟房间空间感。<br><br>顶部状态栏显示实时时钟、天气和系统状态；底部设备栏汇总网关、在线设备数和网络延迟。已配置 3 组 Nudge 控件，可在 Canvas 中快速切换暗色/亮色/深海主题、调整主强调色和圆角大小。`, 12);
+          ai.insertAdjacentHTML('beforeend', `<div class="bubble-actions">
+            <img src="Output  操作栏.png" style="height:24px;display:block;opacity:.85;" />
+          </div>`);
+          const loading = document.getElementById('canvas-loading');
+          if (loading) loading.style.display = 'none';
+          document.getElementById('result-thinking').innerHTML = '';
+          // 展示真实画布内容
+          showCanvasResult();
+          document.getElementById('canvas-toolbar').style.display = 'flex';
+          msgs.scrollTop = msgs.scrollHeight;
+        }],
+      ];
+
+      steps.forEach(([delay, fn]) => setTimeout(fn, delay));
+    }
+
+    /* ── Tab 切换 ── */
+    const TAB_MAP = {0:'canvas', 1:'design', 2:'preview', 3:'style', 4:'plan'};
+    function switchTab(idx) {
+      document.querySelectorAll('.result-tab').forEach((t,i) => t.classList.toggle('active', i===idx));
+      Object.values(TAB_MAP).forEach(id => {
+        const el = document.getElementById('panel-'+id);
+        if (el) el.style.display = 'none';
+      });
+      const target = document.getElementById('panel-' + TAB_MAP[idx]);
+      if (target) target.style.display = 'flex';
+    }
+
+    /* ── 画布内容 ── */
+    function showCanvasResult() {
+      switchTab(0);
+      const panel = document.getElementById('panel-canvas');
+      panel.innerHTML = `
+      <div style="padding:10px 14px 6px;display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:11px;color:rgba(255,255,255,.35);font-weight:500;">Main Canvas</span>
+        <span style="font-size:11px;color:rgba(255,255,255,.25);display:flex;align-items:center;gap:4px;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 3v9h-9"/></svg>重新想象
+        </span>
+      </div>
+      <div style="flex:1;padding:0 10px 10px;overflow:hidden;">
+        <div class="smarthome">
+          <!-- 顶栏 -->
+          <div class="sh-topbar">
+            <div class="sh-brand">
+              <div class="sh-brand-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              </div>
+              智家中控 <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,.35);margin-left:2px;">Smart Hub</span>
+            </div>
+            <div class="sh-weather">
+              <span>☁️ 多云 26°C</span>
+              <span>🛡 系统正常</span>
+            </div>
+            <div class="sh-clock">
+              <div class="time"><span class="sh-dot"></span>15:18</div>
+              <div class="date">6月16日 周二</div>
+            </div>
+          </div>
+          <!-- 主体三列 -->
+          <div class="sh-body">
+            <!-- 环境看板 -->
+            <div class="sh-card">
+              <div class="sh-card-title">
+                <span>✦ 环境看板</span>
+                <span class="sh-card-tag">客厅</span>
+              </div>
+              <div class="env-grid">
+                <div class="env-item">
+                  <div class="env-label">🌡 温度</div>
+                  <div class="env-val">24.5<small>°C</small></div>
+                  <div class="env-sub">+0.3°C 较昨日</div>
+                </div>
+                <div class="env-item">
+                  <div class="env-label">💧 湿度</div>
+                  <div class="env-val">58<small>%</small></div>
+                  <div class="env-sub warn">−2% 较适宜</div>
+                </div>
+                <div class="env-item">
+                  <div class="env-label">🌐 PM2.5</div>
+                  <div class="env-val">12<small>μg</small></div>
+                  <div class="env-sub">优</div>
+                </div>
+                <div class="env-item">
+                  <div class="env-label">👁 CO₂</div>
+                  <div class="env-val">420<small>ppm</small></div>
+                  <div class="env-sub warn">空气新鲜</div>
+                </div>
+              </div>
+              <div class="trend-wrap">
+                <div class="trend-label">
+                  <span>24小时温湿度趋势</span>
+                  <span style="display:flex;gap:8px;">
+                    <span style="color:#6366f1;">● 温度</span>
+                    <span style="color:#06b6d4;">● 湿度</span>
+                  </span>
+                </div>
+                <div class="trend-chart">
+                  <svg viewBox="0 0 300 60" preserveAspectRatio="none">
+                    <defs>
+                      <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#6366f1" stop-opacity=".4"/>
+                        <stop offset="100%" stop-color="#6366f1" stop-opacity="0"/>
+                      </linearGradient>
+                      <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#06b6d4" stop-opacity=".3"/>
+                        <stop offset="100%" stop-color="#06b6d4" stop-opacity="0"/>
+                      </linearGradient>
+                    </defs>
+                    <path d="M0,40 C30,35 60,20 100,22 C140,24 160,30 200,28 C240,26 270,32 300,30 L300,60 L0,60 Z" fill="url(#g1)"/>
+                    <path d="M0,40 C30,35 60,20 100,22 C140,24 160,30 200,28 C240,26 270,32 300,30" fill="none" stroke="#6366f1" stroke-width="1.5"/>
+                    <path d="M0,48 C30,45 70,38 110,40 C150,42 180,44 220,42 C260,40 280,46 300,44 L300,60 L0,60 Z" fill="url(#g2)"/>
+                    <path d="M0,48 C30,45 70,38 110,40 C150,42 180,44 220,42 C260,40 280,46 300,44" fill="none" stroke="#06b6d4" stroke-width="1.5"/>
+                  </svg>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:9px;color:rgba(255,255,255,.2);margin-top:2px;">
+                  <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>现在</span>
+                </div>
+              </div>
+            </div>
+            <!-- 快捷场景 -->
+            <div class="sh-card">
+              <div class="sh-card-title">
+                <span>⚡ 快捷场景</span>
+                <span class="sh-card-tag">编辑</span>
+              </div>
+              <div class="scene-grid">
+                <div class="scene-item active" onclick="this.classList.toggle('active')">
+                  <div class="scene-tag">已启用</div>
+                  <div class="scene-icon">🏠</div>
+                  <div>回家模式</div>
+                </div>
+                <div class="scene-item" onclick="this.classList.toggle('active')">
+                  <div class="scene-icon">🚪</div>
+                  <div>离家模式</div>
+                </div>
+                <div class="scene-item" onclick="this.classList.toggle('active')">
+                  <div class="scene-icon">🌙</div>
+                  <div>睡眠模式</div>
+                </div>
+                <div class="scene-item" onclick="this.classList.toggle('active')">
+                  <div class="scene-icon">🖥</div>
+                  <div>观影模式</div>
+                </div>
+                <div class="scene-item" onclick="this.classList.toggle('active')">
+                  <div class="scene-icon">☀️</div>
+                  <div>起床模式</div>
+                </div>
+                <div class="scene-item" onclick="this.classList.toggle('active')">
+                  <div class="scene-icon">👥</div>
+                  <div>会客模式</div>
+                </div>
+              </div>
+            </div>
+            <!-- 安防监控 -->
+            <div class="sh-card">
+              <div class="sh-card-title">
+                <span>🔒 安防监控</span>
+                <span class="sh-card-tag">查看全部</span>
+              </div>
+              <div class="cam-grid">
+                ${['客厅主播','入户门廊','主卧','车库'].map(name=>`
+                <div class="cam-item">
+                  <div class="cam-screen">
+                    <div class="cam-rec">● REC</div>
+                    <div class="cam-ts">15:18:41</div>
+                    <svg class="cam-silhouette" viewBox="0 0 80 50" fill="none">
+                      <rect x="5" y="25" width="20" height="15" rx="2" fill="rgba(255,255,255,.6)"/>
+                      <rect x="30" y="15" width="30" height="25" rx="2" fill="rgba(255,255,255,.4)"/>
+                      <rect x="65" y="20" width="12" height="20" rx="2" fill="rgba(255,255,255,.5)"/>
+                    </svg>
+                  </div>
+                  <div class="cam-footer">
+                    <span>${name}</span>
+                    <div class="cam-online"></div>
+                  </div>
+                </div>`).join('')}
+              </div>
+            </div>
+          </div>
+          <!-- 底栏 -->
+          <div class="sh-bottombar">
+            <span><span class="sh-online-dot"></span>智能中控屏 v2.4 &nbsp;●&nbsp; 网关在线 &nbsp;●&nbsp; 23 个设备运行中</span>
+            <span>👁 网络：优（延时 12ms）</span>
+          </div>
+        </div>
+      </div>`;
+      // 预览面板 = 同内容缩略
+      const preview = document.getElementById('panel-preview');
+      preview.innerHTML = panel.innerHTML;
+      preview.style.opacity = '.85';
+
+      // 风格参考面板
+      buildStylePanel();
+
+      // 设计文件面板
+      const designPanel = document.getElementById('panel-design');
+      const codeLines = [
+        [`<span class="c-tag">&lt;!DOCTYPE html&gt;</span>`],
+        [`<span class="c-tag">&lt;html</span> <span class="c-attr">lang</span>=<span class="c-str">"zh-CN"</span><span class="c-tag">&gt;</span>`],
+        [`<span class="c-tag">&lt;head&gt;</span>`],
+        [`  <span class="c-tag">&lt;meta</span> <span class="c-attr">charset</span>=<span class="c-str">"UTF-8"</span><span class="c-tag">&gt;</span>`],
+        [`  <span class="c-tag">&lt;meta</span> <span class="c-attr">name</span>=<span class="c-str">"viewport"</span> <span class="c-attr">content</span>=<span class="c-str">"width=device-width, initial-scale=1.0"</span><span class="c-tag">&gt;</span>`],
+        [`  <span class="c-tag">&lt;meta</span> <span class="c-attr">name</span>=<span class="c-str">"canvas:aspect-ratio"</span> <span class="c-attr">content</span>=<span class="c-str">"16:9"</span><span class="c-tag">&gt;</span>`],
+        [`  <span class="c-tag">&lt;title&gt;</span>智能家居中控大屏<span class="c-tag">&lt;/title&gt;</span>`],
+        [`  <span class="c-tag">&lt;link</span> <span class="c-attr">rel</span>=<span class="c-str">"preconnect"</span> <span class="c-attr">href</span>=<span class="c-str">"https://fonts.googleapis.com"</span><span class="c-tag">&gt;</span>`],
+        [`  <span class="c-tag">&lt;link</span> <span class="c-attr">rel</span>=<span class="c-str">"preconnect"</span> <span class="c-attr">href</span>=<span class="c-str">"https://fonts.gstatic.com"</span> <span class="c-attr">crossorigin</span><span class="c-tag">&gt;</span>`],
+        [`  <span class="c-tag">&lt;link</span> <span class="c-attr">rel</span>=<span class="c-str">"stylesheet"</span> <span class="c-attr">href</span>=<span class="c-str">"https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap"</span><span class="c-tag">&gt;</span>`],
+        [`  <span class="c-tag">&lt;style&gt;</span>`],
+        [`    <span class="c-prop">:root</span> {`],
+        [`      <span class="c-attr">--seed-bg</span>: <span class="c-num">#08090a</span>;`],
+        [`      <span class="c-attr">--seed-fg</span>: <span class="c-num">#f7f8f8</span>;`],
+        [`      <span class="c-attr">--seed-primary</span>: <span class="c-num">#5e6ad2</span>;`],
+        [`      <span class="c-attr">--seed-accent</span>: <span class="c-num">#7170ff</span>;`],
+        [`      <span class="c-attr">--seed-surface</span>: <span class="c-num">#0f1011</span>;`],
+        [`      <span class="c-attr">--seed-surface-elevated</span>: <span class="c-num">#191a1b</span>;`],
+        [`      <span class="c-attr">--seed-radius</span>: <span class="c-num">12px</span>;`],
+        [`      <span class="c-attr">--seed-secondary-text</span>: <span class="c-num">#8a8f98</span>;`],
+        [`      <span class="c-attr">--seed-border</span>: <span class="c-val">rgba</span>(<span class="c-num">255,255,255,0.08</span>);`],
+        [`      <span class="c-attr">--seed-border-subtle</span>: <span class="c-val">rgba</span>(<span class="c-num">255,255,255,0.05</span>);`],
+        [`      <span class="c-attr">--seed-success</span>: <span class="c-num">#10b981</span>;`],
+        [`      <span class="c-attr">--seed-warning</span>: <span class="c-num">#f59e0b</span>;`],
+        [`      <span class="c-attr">--seed-danger</span>: <span class="c-num">#ef4444</span>;`],
+        [`      <span class="c-attr">--seed-primary-alpha-10</span>: <span class="c-val">rgba</span>(<span class="c-num">94,106,210,0.10</span>);`],
+        [`      <span class="c-attr">--seed-primary-alpha-12</span>: <span class="c-val">rgba</span>(<span class="c-num">94,106,210,0.12</span>);`],
+        [`      <span class="c-attr">--seed-primary-alpha-15</span>: <span class="c-val">rgba</span>(<span class="c-num">94,106,210,0.15</span>);`],
+        [`      <span class="c-attr">--seed-primary-alpha-30</span>: <span class="c-val">rgba</span>(<span class="c-num">94,106,210,0.30</span>);`],
+        [`      <span class="c-attr">--seed-primary-alpha-35</span>: <span class="c-val">rgba</span>(<span class="c-num">94,106,210,0.35</span>);`],
+        [`      <span class="c-attr">--seed-accent-alpha-10</span>: <span class="c-val">rgba</span>(<span class="c-num">113,112,255,0.10</span>);`],
+        [`      <span class="c-attr">--seed-accent-alpha-35</span>: <span class="c-val">rgba</span>(<span class="c-num">113,112,255,0.35</span>);`],
+        [`      <span class="c-attr">--seed-success-alpha-40</span>: <span class="c-val">rgba</span>(<span class="c-num">16,185,129,0.40</span>);`],
+        [`      <span class="c-attr">--seed-danger-alpha-15</span>: <span class="c-val">rgba</span>(<span class="c-num">239,68,68,0.15</span>);`],
+        [`      <span class="c-attr">--seed-danger-alpha-25</span>: <span class="c-val">rgba</span>(<span class="c-num">239,68,68,0.25</span>);`],
+        [`      <span class="c-attr">--seed-cam-bg-start</span>: <span class="c-num">#0a0c14</span>;`],
+        [`      <span class="c-attr">--seed-cam-bg-mid</span>: <span class="c-num">#11131f</span>;`],
+        [`      <span class="c-attr">--seed-cam-bg-end</span>: <span class="c-num">#0d0f18</span>;`],
+        [`      <span class="c-attr">--seed-chart-grid</span>: <span class="c-val">rgba</span>(<span class="c-num">255,255,255,0.04</span>);`],
+        [`      <span class="c-attr">--seed-chart-text</span>: <span class="c-num">#62666d</span>;`],
+        [`    }`],
+        [``],
+        [`    <span class="c-fn">* </span>{ <span class="c-attr">margin</span>: <span class="c-num">0</span>; <span class="c-attr">padding</span>: <span class="c-num">0</span>; <span class="c-attr">box-sizing</span>: <span class="c-val">border-box</span>; }`],
+        [``],
+        [`    <span class="c-fn">html, body</span> {`],
+        [`      <span class="c-attr">width</span>: <span class="c-num">100%</span>;`],
+        [`      <span class="c-attr">height</span>: <span class="c-num">100%</span>;`],
+        [`      <span class="c-attr">background</span>: <span class="c-val">var</span>(<span class="c-attr">--seed-bg</span>);`],
+        [`      <span class="c-attr">color</span>: <span class="c-val">var</span>(<span class="c-attr">--seed-fg</span>);`],
+      ];
+      designPanel.innerHTML = `
+      <div class="df-wrap">
+        <div class="df-header">
+          <div class="df-header-left">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            设计文件 <span class="df-badge">只读</span>
+          </div>
+          <div class="df-header-right">⊞ 打开文件夹</div>
+        </div>
+        <div class="df-body">
+          <div class="df-sidebar">
+            <div class="df-search">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              搜索文件
+            </div>
+            <div class="df-file-list">
+              <div class="df-file-item">
+                <div class="df-file-item-name">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  .canvas-meta.json
+                </div>
+              </div>
+              <div class="df-file-item active">
+                <div class="df-file-item-name">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  index.html
+                </div>
+                <span class="df-check">✓</span>
+              </div>
+            </div>
+            <div class="df-footer-count">2 个文件</div>
+          </div>
+          <div class="df-code-area">
+            <div class="df-code-topbar">
+              <div class="df-code-tab">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                index.html &times;
+              </div>
+              <div class="df-code-actions">
+                <span>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 3v9h-9"/></svg>
+                  重新加载
+                </span>
+                <span>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  复制
+                </span>
+                <span class="df-open-btn">打开画布 ›</span>
+              </div>
+            </div>
+            <div style="padding:4px 14px 2px;font-size:10px;color:rgba(255,255,255,.25);">index.html</div>
+            <div class="df-code-scroll">
+              ${codeLines.map((ln,i)=>`<div class="df-code-line"><span class="df-ln">${i+1}</span><span>${ln[0]}</span></div>`).join('')}
+            </div>
+            <div class="df-statusbar">
+              <span>HTML &nbsp; 29 KB</span>
+              <span>只读</span>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    /* 风格参考面板内容 */
+    function buildStylePanel() {
+      const styles = [
+        { name:'Airbnb',      desc:'Travel marketplace. Warm coral accent, photography-driven, rounded UI.',   bg:'#fff8f6', h1color:'#FF5A5F', accent:'#FF5A5F', dots:['#222','#FF5A5F','#aaa'] },
+        { name:'Airtable',    desc:'Spreadsheet-database hybrid. Colorful, friendly, structured data aesthetic.', bg:'#f0f7ff', h1color:'#111', accent:'#111', dots:['#222','#0057ff','#aaa'] },
+        { name:'Apple',       desc:'Consumer electronics. Premium white space, SF Pro, cinematic imagery.',    bg:'#f5f5f7', h1color:'#1d1d1f', accent:'#0071e3', dots:['#222','#0071e3','#aaa'] },
+        { name:'Carbon',      desc:'Enterprise product system for data-heavy tools. Neutral IBM-like structure, blue action...', bg:'#f4f4f4', h1color:'#161616', accent:'#0f62fe', dots:['#161616','#0f62fe','#aaa'] },
+        { name:'Cloudscape',  desc:'Cloud-console UI for complex infrastructure. Dense resources, table-first layouts, blue...', bg:'#f1f4ff', h1color:'#16191f', accent:'#0073bb', dots:['#16191f','#0073bb','#aaa'] },
+        { name:'Figma',       desc:'Collaborative design tool. Vibrant multi-color, playful yet professional.',  bg:'#fff9f5', h1color:'#1e1e1e', accent:'#F24E1E', dots:['#222','#F24E1E','#aaa'] },
+        { name:'Fluent',      desc:'Microsoft-style productivity UI with layered surfaces, soft corners, inclusive states, and...', bg:'#f3f2f1', h1color:'#201f1e', accent:'#0078d4', dots:['#201f1e','#0078d4','#aaa'] },
+        { name:'Github',      desc:'Code-forward platform. Functional density, blue-on-white precision, Primer foundations.', bg:'#f6f8fa', h1color:'#24292f', accent:'#0969da', dots:['#24292f','#0969da','#aaa'] },
+        { name:'GOV.UK',      desc:'UK public-service UI. Extremely clear typography, black text, blue links, form-first...', bg:'#fff', h1color:'#0b0c0c', accent:'#1d70b8', dots:['#0b0c0c','#1d70b8','#aaa'] },
+        { name:'Linear',      desc:'Project management. Ultra-minimal, precise, purple accent.',                bg:'#16141d', h1color:'#fff', accent:'#7c3aed', dark:true, dots:['#fff','#7c3aed','#555'] },
+        { name:'Material',    desc:"Google's Material Design with layered surfaces, dynamic theming, built-in motion,...", bg:'#fffbfe', h1color:'#1c1b1f', accent:'#6750a4', dots:['#1c1b1f','#6750a4','#aaa'] },
+        { name:'NHSUK',       desc:'Healthcare service UI with high-trust blue, readable content, urgent-state clarity, and...', bg:'#fff', h1color:'#212b32', accent:'#005eb8', dots:['#212b32','#005eb8','#aaa'] },
+      ];
+
+      const stylePanel = document.getElementById('panel-style');
+      stylePanel.innerHTML = `<div class="sr-wrap">
+        <div class="sr-filterbar">
+          <span class="sr-filter-label">类型</span>
+          <span class="sr-chip active">全部 <span class="sr-chip-count">161</span></span>
+          <span class="sr-chip">自定义 <span class="sr-chip-count">0</span></span>
+          <span class="sr-chip">热门 <span class="sr-chip-count">21</span></span>
+          <span class="sr-chip">AI 与 LLM <span class="sr-chip-count">12</span></span>
+          <span class="sr-chip">开发者工具 <span class="sr-chip-count">10</span></span>
+          <span class="sr-chip">效率与 SaaS <span class="sr-chip-count">8</span></span>
+          <span class="sr-chip">电商与零售 <span class="sr-chip-count">9</span></span>
+          <span class="sr-chip">媒体与消...</span>
+          <div class="sr-actions">
+            <div class="sr-search">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              搜索风格参考
+            </div>
+            <div class="sr-btn">＋ 创建</div>
+            <div class="sr-btn sr-btn-primary">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+              从画布提取风格
+            </div>
+          </div>
+        </div>
+        <div class="sr-grid">
+          ${styles.map(s => `
+          <div class="sr-card${s.name==='Linear'?' selected':''}">
+            <div class="sr-preview">
+              <div class="sr-preview-inner" style="background:${s.bg};color:${s.dark?'rgba(255,255,255,.8)':'rgba(0,0,0,.8)'};">
+                <div class="sr-preview-toprow">
+                  <div class="sr-preview-brand">
+                    <div style="width:10px;height:10px;border-radius:50%;background:${s.accent};"></div>
+                    <span>Meridian</span>
+                  </div>
+                  <span class="sr-preview-badge" style="background:${s.dark?'rgba(255,255,255,.1)':'rgba(0,0,0,.06)'};color:${s.dark?'rgba(255,255,255,.5)':'rgba(0,0,0,.4)'};">RESEARCH LAB</span>
+                </div>
+                <div class="sr-preview-sys">● INDEPENDENT SYSTEMS</div>
+                <div class="sr-preview-h1" style="color:${s.dark?'#fff':'#111'};">Careful<br><em style="color:${s.accent};">intelligence.</em></div>
+                <div class="sr-preview-sub">Reliable, interpretable systems for long-horizon work.</div>
+                <div class="sr-preview-stats">
+                  <div class="sr-preview-stat">ISSUE<span>014</span></div>
+                  <div class="sr-preview-stat">PAPERS<span>43</span></div>
+                  <div class="sr-preview-stat">LABS<span>02</span></div>
+                  <div class="sr-preview-dots">
+                    ${s.dots.map(c=>`<div class="sr-preview-dot" style="background:${c};"></div>`).join('')}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="sr-info">
+              <div class="sr-name">${s.name}</div>
+              <div class="sr-desc">${s.desc}</div>
+              <div class="sr-footer">
+                <span class="sr-tag">热门</span>
+                <div class="sr-palette">
+                  <div class="sr-pal" style="background:${s.dark?'#fff':'#f0f0f0'};border:1px solid rgba(255,255,255,.1);"></div>
+                  <div class="sr-pal" style="background:${s.accent};"></div>
+                  <div class="sr-pal" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.1);"></div>
+                </div>
+              </div>
+            </div>
+          </div>`).join('')}
+        </div>
+      </div>`;
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.result-tab').forEach((tab, idx) => {
+        tab.addEventListener('click', () => switchTab(idx));
+      });
     });
-  });
-}
 
-function trigger(){
-  if(shown){
-    lingtaiWrap.classList.remove('show');
-    phase1.classList.remove('hidden');
-    phase2.classList.remove('show');
-    phase2.style.opacity = '';
-    phase2.style.pointerEvents = '';
-    phase3.classList.remove('show');
-    cardShell.classList.remove('expanded');
-    cardShell.style.width = '';
-    cardShell.style.height = '';
-    cardShell.style.borderRadius = '';
-    cardShell.style.transition = '';
-    clearInterval(timerHandle);
-    timerSec = 0;
-    timerEl.textContent = '00:00';
-    phase2.querySelectorAll('.aui-row')
-      .forEach(el => { el.classList.remove('visible'); el.style.opacity = ''; });
-    const divider = document.getElementById('row-divider');
-    if(divider) divider.style.opacity = '';
-    resetFloat();
-    shown = false;
-    document.getElementById('trigger-btn').textContent = '⚡ 触发感知事件';
-    document.getElementById('hint-text').textContent = '点击模拟感知触发';
-    return;
-  }
+    /* 首页输入框按 Enter 发送（Shift+Enter 换行） */
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.result-tab').forEach((tab, idx) => {
+        tab.addEventListener('click', () => switchTab(idx));
+      });
+      document.querySelector('.input-field').addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendQuery(); }
+      });
+      document.getElementById('home-send-btn').addEventListener('click', sendQuery);
 
-  shown = true;
-  document.getElementById('trigger-btn').textContent = '✕ 收起';
-  document.getElementById('hint-text').textContent = '再次点击收起';
-
-  // 重置
-  phase1.classList.remove('hidden');
-  phase2.classList.remove('show');
-  phase2.style.opacity = '';
-  phase2.style.pointerEvents = '';
-  cardShell.classList.remove('expanded');
-  resetFloat();
-  lingtaiWrap.classList.add('show');
-  startRipple();
-
-  // 滑入后触发文案流光
-  setTimeout(() => {
-    const txt = document.getElementById('p1-text');
-    if(txt) { txt.classList.remove('reveal'); void txt.offsetWidth; txt.classList.add('reveal'); }
-  }, 100);
-
-  // 1.5s 后：FLIP 动画
-  setTimeout(() => {
-    if(!shown) return;
-    flipToPhase2();
-  }, 1500);
-}
-
-document.getElementById('trigger-btn').addEventListener('click', trigger);
-
-// 快捷键 Space 触发
-document.addEventListener('keydown', e => {
-  if(e.code === 'Space') { e.preventDefault(); trigger(); }
-});
-
-// ─────────────────────────────────────────────────────────────
-// 第三态：会议记录
-// ─────────────────────────────────────────────────────────────
-const phase3    = document.getElementById('phase3');
-const timerEl   = document.getElementById('meet-timer');
-let timerSec    = 0;
-let timerHandle = null;
-
-function startMeeting() {
-  // 1. 先让 phase2 内容和 floating-header 快速淡出
-  phase2.style.transition = 'opacity 0.2s ease';
-  phase2.style.opacity = '0';
-  phase2.style.pointerEvents = 'none';
-  floatHdr.style.transition = 'opacity 0.2s ease';
-  floatHdr.style.opacity = '0';
-
-  // 2. 内容淡出后再开始背景收缩
-  setTimeout(() => {
-    cardShell.style.transition = 'width 0.45s cubic-bezier(0.16,1,0.3,1), height 0.45s cubic-bezier(0.16,1,0.3,1), border-radius 0.45s cubic-bezier(0.16,1,0.3,1)';
-    cardShell.style.width        = '314px';
-    cardShell.style.height       = '58px';
-    cardShell.style.borderRadius = '29px';
-
-    // 3. 背景收缩结束后 phase3 淡入
-    setTimeout(() => {
-      phase3.classList.add('show');
-    }, 350);
-  }, 200);
-
-  // 计时器
-  timerSec = 0;
-  timerEl.textContent = '00:00';
-  clearInterval(timerHandle);
-  timerHandle = setInterval(() => {
-    timerSec++;
-    const m = String(Math.floor(timerSec / 60)).padStart(2, '0');
-    const s = String(timerSec % 60).padStart(2, '0');
-    timerEl.textContent = `${m}:${s}`;
-  }, 1000);
-}
-
-document.querySelector('.btn-confirm').addEventListener('click', () => {
-  // 先让按钮物理反馈动画完成（100ms）再切换
-  setTimeout(startMeeting, 100);
-});
-</script>
+      document.getElementById('dual-input').addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendDual(); }
+      });
+    });
+  </script>
 </body>
 </html>
