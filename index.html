@@ -5,37 +5,78 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>天禧AI - 主页</title>
   <style>
+    @font-face {
+      font-family: "HYDaSongJ";
+      src: url("deployed-assets/001-HYDaSongJ-2(2)-31f337f4.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "SongtiCustom";
+      src:
+        local("Songti SC Regular"),
+        local("STSong");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     html, body {
-      width: 100%;
-      height: 100%;
+      width: 1200px;
+      height: 770px;
       overflow: hidden;
       background: #0b0b0c;
       font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Noto Sans SC',
                    'Microsoft YaHei', sans-serif;
     }
+    body {
+      position: relative;
+      transform: translateZ(0);
+      transform-origin: left top;
+    }
 
     /* ── 全页背景（浏览器外壳截图） ── */
     .bg-shell {
       position: fixed;
-      inset: 0;
-      background: url('bg.png') center / cover no-repeat;
+      left: 0;
+      top: 0;
+      width: 1200px;
+      height: 770px;
+      background: url('deployed-assets/003-bg-da2fd542.png') center / cover no-repeat;
+      overflow: hidden;
       pointer-events: none;
       z-index: 0;
     }
     body.dual-mode .bg-shell {
-      background-image: url('bg2.png');
+      background-image: url('deployed-assets/004-对话开始bg-0515f2b9.png');
     }
-
+    body.dual-file-open .bg-shell {
+      background-image: url('deployed-assets/005-双窗-bg-0a236d13.png');
+    }
+    .dual-title-shell {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 1200px;
+      height: 56px;
+      z-index: 25;
+      pointer-events: none;
+      display: none;
+      background: url('deployed-assets/006-title-7443498a.png') center top / 100% 56px no-repeat;
+    }
+    body.dual-file-open .dual-title-shell {
+      display: block;
+    }
     /* ── 内容区（覆盖在背景黑色大区域上）── */
     /* bg.png 中侧边栏约 80px，顶栏约 55px（按 2400x1540 原图） */
     .content-area {
       position: fixed;
-      left: 80px;
-      top: 55px;
-      right: 0;
-      bottom: 0;
+      left: 261px;
+      top: 53px;
+      width: 939px;
+      height: 717px;
       z-index: 10;
       display: flex;
       flex-direction: column;
@@ -47,20 +88,20 @@
 
     /* 宽度容器 */
     .content-inner {
-      width: 838px;
+      width: 939px;
       flex: 1;
       display: flex;
       flex-direction: column;
-      align-items: flex-start;
-      padding-top: 88px;
+      align-items: center;
+      padding-top: 92px;
     }
 
     /* ── 标题 ── */
     .hero-title {
-      display: flex;
+      display: none;
       align-items: center;
       gap: 14px;
-      margin-bottom: 20px; /* 标题距下方 Feature 图片 20px */
+      margin-bottom: 56px;
     }
     .hero-logo {
       width: 46px;
@@ -69,12 +110,66 @@
       display: block;
       object-fit: contain;
     }
+    body:not(.super-mode-active) .hero-logo {
+      display: none;
+    }
+    .hero-copy {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
     .hero-title-text {
+      position: relative;
+      display: inline-block;
+      font-family: "SongtiCustom", "Songti SC", "PingFang SC", sans-serif;
       font-size: 30px;
-      font-weight: 600;
-      color: #fff;
-      letter-spacing: 0.3px;
+      font-weight: 400;
+      line-height: 40px;
+      color: #16181d;
+      letter-spacing: 0;
       white-space: nowrap;
+    }
+    .hero-title-question,
+    .heading-question {
+      font-family: "HYDaSongJ", "Songti SC", serif;
+      font-weight: 400;
+      font-size: 30px;
+      line-height: inherit;
+    }
+    .hero-super-desc {
+      position: absolute;
+      left: 0;
+      top: calc(100% + 8px);
+      max-width: 838px;
+      font-size: 14px;
+      line-height: 1.5;
+      color: rgba(255,255,255,.62);
+      letter-spacing: 0;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s ease;
+    }
+    body.super-mode-active .hero-super-desc {
+      opacity: 1;
+    }
+    .hero-title-text.super-copy {
+      color: #fff;
+      text-shadow: 0 0 18px rgba(98,224,255,.12);
+    }
+    .hero-title-text.title-sweep-once {
+      color: transparent;
+      background: linear-gradient(100deg, #fff 0%, #fff 38%, #8ad8ff 48%, #fff 58%, #fff 100%);
+      background-size: 260% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: titleSweep .72s ease-out 1;
+    }
+    @keyframes titleSweep {
+      0% { background-position: 130% 50%; }
+      100% { background-position: -130% 50%; }
     }
 
     /* ── Tab 导航（图片） ── */
@@ -82,98 +177,268 @@
       margin-bottom: 10px; /* Feature 图片距输入框 10px */
       margin-left: -20px;
     }
+    body:not(.super-mode-active) .tab-bar {
+      display: none;
+    }
     .tab-bar img {
       width: 100%;
       height: auto;
       display: block;
     }
+    body.super-mode-active .tab-bar {
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+    }
 
     /* ── 输入框（彩虹光圈） ── */
     .input-wrap {
-      width: 100%;
-      max-width: 838px;
-      position: relative;
-      margin-bottom: 18px;
+      width: 838px;
+      max-width: none;
+      position: fixed;
+      left: auto;
+      right: 51px;
+      bottom: 21px;
+      transform: none;
+      z-index: 20000;
+      margin-bottom: 0;
+    }
+    body.super-mode-active .input-wrap {
+      width: 838px;
+      left: auto;
+      right: 51px;
+      transform: none;
     }
 
     /* 彩虹渐变边框层 —— 默认态（无超能）*/
     .input-glow {
       position: relative;
-      border-radius: 18px;
+      isolation: isolate;
+      box-sizing: border-box;
+      overflow: visible;
+      border-radius: 20px;
       padding: 1.5px;
+      height: 108px;
       background: linear-gradient(
-        125deg,
-        #39ff14 0%, #00e5ff 18%, #651fff 36%,
-        #e040fb 50%, #ff1744 64%, #ff6d00 78%,
-        #ffd600 92%, #39ff14 100%
+        120deg,
+        #ff623d 0%, #ff4e8a 14%, #bd65ff 30%,
+        #4a8cff 52%, #33b7ff 72%, #31d46a 88%,
+        #ffbe2e 100%
       );
       background-size: 200% 200%;
-      animation: gradientShift 4s ease infinite;
-      box-shadow:
-        0 0 18px rgba(57,255,20,.18),
-        0 0 36px rgba(224,64,251,.14),
-        0 0 56px rgba(255,23,68,.10),
-        0 0 80px rgba(101,31,255,.08);
-      transition: box-shadow .4s, background .4s;
+      animation: gradientShift 5.6s ease infinite;
+      box-shadow: none;
+      transition: height .24s cubic-bezier(.22, 1, .36, 1), box-shadow .4s, background .4s, border-radius .28s ease;
+    }
+    .input-bottom-light {
+      position: absolute;
+      left: 50%;
+      right: auto;
+      top: 29%;
+      bottom: auto;
+      z-index: -2;
+      width: calc(100% + 140px);
+      height: calc(100% + 140px);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    .input-bottom-light img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: fill;
+      user-select: none;
+      -webkit-user-drag: none;
+      transition: opacity .30s cubic-bezier(.22, 1, .36, 1);
+    }
+    .input-bottom-light .light-fast {
+      opacity: 1;
+    }
+    .input-bottom-light .light-super {
+      opacity: 0;
+    }
+    .input-glow::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      border-radius: inherit;
+      background: #335eff;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .28s cubic-bezier(.22, 1, .36, 1);
+    }
+    .input-glow.active::after {
+      opacity: 1;
+    }
+    body.super-mode-active .input-bottom-light .light-fast {
+      opacity: 0;
+    }
+    body.super-mode-active .input-bottom-light .light-super {
+      opacity: .8;
+      animation: superInputLightBreath 2.4s ease-in-out infinite;
+    }
+    body.super-mode-active .input-glow {
+      height: 108px;
     }
     /* 超能激活态：#8AD8FF 流光边框 + #0088FF 弥散投影 */
     .input-glow.active {
-      background: linear-gradient(
-        125deg,
-        #8AD8FF 0%, #62E0FF 25%, #00AAFF 50%,
-        #8AD8FF 75%, #62E0FF 100%
-      );
-      background-size: 200% 200%;
-      animation: gradientShift 3s ease infinite;
-      box-shadow:
-        0 0 24px rgba(0,136,255,.55),
-        0 0 60px rgba(0,136,255,.28),
-        0 0 100px rgba(0,136,255,.12);
+      border-radius: 10px 20px 20px 20px;
+      box-shadow: 0 0 0 2px rgba(51, 94, 255, .20);
+    }
+    @keyframes superInputLightBreath {
+      0%, 100% {
+        opacity: .48;
+        transform: scaleX(.97) scaleY(.92);
+      }
+      50% {
+        opacity: .80;
+        transform: scaleX(1) scaleY(1.04);
+      }
     }
     @keyframes gradientShift {
       0%   { background-position: 0% 50%; }
       50%  { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
-
+    @keyframes inputGlowBreath {
+      0%, 100% {
+        box-shadow:
+          0 0 18px rgba(0,136,255,.34),
+          0 0 44px rgba(0,136,255,.18),
+          0 0 78px rgba(0,136,255,.08);
+      }
+      50% {
+        box-shadow:
+          0 0 30px rgba(0,136,255,.68),
+          0 0 78px rgba(0,136,255,.36),
+          0 0 128px rgba(0,136,255,.18);
+      }
+    }
     .input-inner {
-      background: #111214;
-      border-radius: 17px;
-      padding: 18px 20px 14px;
-      min-height: 148px;
+      position: relative;
+      z-index: auto;
+      background: #fff;
+      border-radius: 18px;
+      padding: 0;
+      min-height: 0;
+      height: 100%;
+      display: block;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.66);
+    }
+    .super-energy-label {
+      position: absolute;
+      left: -0.5px;
+      top: -13px;
+      z-index: 3;
+      height: 22px;
       display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+      align-items: center;
+      gap: 5px;
+      padding: 0 10px 0 8px;
+      border-radius: 11px 11px 11px 0;
+      background: #335eff;
+      color: #fff;
+      box-shadow: 0 5px 14px rgba(51, 94, 255, .20);
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1;
+      letter-spacing: 0;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(5px);
+      pointer-events: none;
+      transition:
+        opacity .18s ease,
+        transform .28s cubic-bezier(.22, 1, .36, 1),
+        visibility 0s linear .28s;
+    }
+    body.super-mode-active .super-energy-label {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+      transition-delay: .06s, .06s, 0s;
+    }
+    .super-energy-label img {
+      width: 14px;
+      height: 14px;
+      flex: 0 0 14px;
+      object-fit: contain;
+    }
+    body.super-mode-active .input-inner {
+      padding: 0;
+      min-height: 0;
+      height: 100%;
+      display: block;
+      border-radius: 8.5px 18px 18px 18px;
     }
 
     .input-field {
+      position: absolute;
+      left: 20px;
+      top: 14px;
       background: transparent;
       border: none;
       outline: none;
-      color: rgba(255,255,255,.85);
-      font-size: 15px;
-      line-height: 1.6;
-      width: 100%;
+      color: #1d2129;
+      font-size: 16px;
+      line-height: 24px;
+      width: calc(100% - 40px);
       resize: none;
       font-family: inherit;
-      flex: 1;
-      min-height: 72px;
+      box-sizing: border-box;
+      padding: 0;
+      height: 28px;
+      min-height: 28px;
+      max-height: 196px;
+      overflow: hidden;
     }
-    .input-field::placeholder { color: rgba(255,255,255,.28); }
+    body.super-mode-active .input-field {
+      position: absolute;
+      left: 20px;
+      top: 14px;
+      width: calc(100% - 40px);
+      height: 28px;
+      min-height: 28px;
+      font-size: 16px;
+      line-height: 24px;
+      overflow: hidden;
+    }
+    .input-field::placeholder { color: #b9bec7; }
 
     .input-footer {
+      position: absolute;
+      left: 20px;
+      right: 14px;
+      bottom: 13px;
+      z-index: 20001;
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-top: 10px;
+      gap: 12px;
+      height: 32px;
+      margin-top: 0;
+      justify-content: space-between;
+    }
+    body.super-mode-active .input-footer {
+      position: absolute;
+      left: 20px;
+      right: 14px;
+      bottom: 13px;
+      height: 32px;
+      margin-top: 0;
     }
     .input-actions { margin-left: auto; }
-    .mode-btns { display: flex; gap: 8px; align-items: center; }
+    .mode-btns { display: flex; gap: 14px; align-items: center; height: 32px; }
+    body:not(.super-mode-active) .mode-btns { gap: 1px; }
+    body.super-mode-active .mode-btns { height: 32px; gap: 1px; }
     .mode-btn {
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 32px;
+      height: 38px;
       padding: 0;
       cursor: pointer;
       border: none;
@@ -189,16 +454,18 @@
     }
     .mode-btn:hover { opacity: .88; }
     .super-mode {
+      position: relative;
+      order: 2;
       justify-content: flex-start;
-      gap: 6px;
-      width: 81px;
-      padding: 0 13px;
-      border: 1px solid rgba(255,255,255,.12);
+      gap: 0;
+      width: auto;
+      padding: 0;
+      border: none;
       border-radius: 999px;
-      background: rgba(255,255,255,.04);
-      color: rgba(255,255,255,.58);
-      overflow: hidden;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+      background: transparent;
+      color: #1f2329;
+      overflow: visible;
+      box-shadow: none;
       transition:
         color .22s ease,
         opacity .18s ease,
@@ -207,6 +474,27 @@
         border-color .26s ease,
         padding .26s ease,
         width .26s ease;
+    }
+    body:not(.super-mode-active) .super-mode::after {
+      content: none;
+    }
+    .super-mode::before {
+      content: none;
+      position: absolute;
+      top: -40%;
+      bottom: -40%;
+      left: -65%;
+      width: 44px;
+      pointer-events: none;
+      background: linear-gradient(105deg, transparent 0%, rgba(138,216,255,.12) 30%, rgba(255,255,255,.52) 50%, rgba(138,216,255,.12) 70%, transparent 100%);
+      filter: blur(.2px);
+      transform: translateX(0) skewX(-18deg);
+      animation: superIdleSweep 2.8s ease-in-out infinite;
+    }
+    @keyframes superIdleSweep {
+      0%, 42% { transform: translateX(0) skewX(-18deg); opacity: 0; }
+      52% { opacity: .95; }
+      74%, 100% { transform: translateX(170px) skewX(-18deg); opacity: 0; }
     }
     .super-mode.on {
       width: 300px;
@@ -220,6 +508,101 @@
         0 0 20px rgba(0,136,255,.18);
       color: #8AD8FF;
     }
+    .quick-mode-menu {
+      position: absolute;
+      left: 0;
+      bottom: calc(100% + 8px);
+      z-index: 2147483647;
+      display: none;
+      width: 297px;
+      height: 130px;
+      padding: 8px 10px;
+      border: 1px solid rgba(18, 24, 33, .08);
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, .20);
+      box-sizing: border-box;
+    }
+    .quick-mode-menu.open {
+      display: block;
+      pointer-events: auto;
+    }
+    body.super-mode-active #btn-super {
+      z-index: 30001;
+      pointer-events: auto;
+    }
+    body.super-mode-active #quick-mode-menu.open {
+      display: block;
+    }
+    .quick-mode-option {
+      box-sizing: border-box;
+      width: 100%;
+      height: 56px;
+      padding: 8px 6px 0;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+      color: #1f2329;
+      font: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      text-align: left;
+    }
+    .quick-mode-option:hover {
+      background: #f2f2f2;
+    }
+    .quick-mode-icon {
+      width: 20px;
+      height: 20px;
+      flex: 0 0 20px;
+      color: #18181b;
+      margin-top: 1px;
+    }
+    .quick-mode-copy {
+      min-width: 0;
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .quick-mode-title {
+      color: #18181b;
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 22px;
+      white-space: nowrap;
+    }
+    .quick-mode-desc {
+      color: #7b818c;
+      font-size: 11px;
+      font-weight: 400;
+      line-height: 17px;
+      white-space: nowrap;
+    }
+    .quick-mode-option .quick-mode-check {
+      width: 16px;
+      height: 16px;
+      flex: 0 0 16px;
+      margin-left: auto;
+      margin-top: 3px;
+      display: block;
+      object-fit: contain;
+      visibility: hidden;
+    }
+    .quick-mode-option.active .quick-mode-title {
+      color: #18181b;
+    }
+    .quick-mode-option.active .quick-mode-icon {
+      color: #18181b;
+    }
+    .quick-mode-option.active .quick-mode-check {
+      visibility: visible;
+    }
+    .super-mode.on::before {
+      display: none;
+    }
     .super-mode-icon {
       width: 14px;
       height: 14px;
@@ -231,11 +614,81 @@
       filter: drop-shadow(0 0 8px rgba(98,224,255,.65));
     }
     .super-mode-label {
-      font-size: 13px;
+      font-size: 19px;
       font-weight: 600;
       letter-spacing: .2px;
       line-height: 1;
       white-space: nowrap;
+    }
+    .default-tool-img {
+      display: block;
+      height: 32px;
+      width: auto;
+      flex-shrink: 0;
+      object-fit: contain;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    .super-mode > .default-tool-img {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity .18s ease, transform .28s cubic-bezier(.22, 1, .36, 1);
+    }
+    .super-mode .selected-super-img {
+      position: absolute;
+      left: 0;
+      top: 2px;
+      display: block;
+      width: auto;
+      height: 28px;
+      flex-shrink: 0;
+      object-fit: contain;
+      user-select: none;
+      -webkit-user-drag: none;
+      opacity: 0;
+      transform: translateY(5px);
+      pointer-events: none;
+      transition: opacity .18s ease, transform .28s cubic-bezier(.22, 1, .36, 1);
+    }
+    .super-context-btn {
+      order: 3;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 32px;
+      padding: 0;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      cursor: pointer;
+      min-width: 0;
+      max-width: 0;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(5px);
+      pointer-events: none;
+      transition:
+        max-width .28s cubic-bezier(.22, 1, .36, 1),
+        opacity .16s ease,
+        transform .28s cubic-bezier(.22, 1, .36, 1),
+        background-color .16s ease;
+    }
+    .super-context-btn img {
+      display: block;
+      width: auto;
+      height: 32px;
+      flex-shrink: 0;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    .default-plus-img {
+      height: 18px;
+    }
+    body.super-mode-active .default-tool-img {
+      display: none;
+    }
+    body.super-mode-active .super-mode .super-mode-status {
+      display: inline-flex;
     }
     .super-mode-status {
       display: inline-flex;
@@ -274,7 +727,6 @@
       padding: 3px 10px;
       border-radius: 999px;
       background: rgba(98,224,255,.14);
-      border: 1px solid rgba(98,224,255,.2);
       color: #8AD8FF;
       font-weight: 600;
       flex-shrink: 0;
@@ -282,6 +734,7 @@
     }
 
     .agent-mode {
+      display: none;
       justify-content: flex-start;
       gap: 6px;
       padding: 0 13px;
@@ -297,8 +750,298 @@
       border-color: rgba(255,255,255,.2);
       color: rgba(255,255,255,.8);
     }
+    .super-mode.on ~ .agent-mode {
+      display: none;
+    }
+    .super-plus-btn {
+      order: 0;
+      width: 31px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid transparent;
+      border-radius: 50%;
+      background: transparent;
+      color: #1f2329;
+      cursor: pointer;
+      box-shadow: none;
+      transition: background .18s, border-color .18s, color .18s, box-shadow .18s;
+    }
+    .super-plus-btn svg {
+      opacity: .8;
+      transition: opacity .18s;
+    }
+    .super-plus-btn img {
+      display: block;
+      height: 18px;
+      width: auto;
+    }
+    .super-plus-btn:hover {
+      border-color: transparent;
+      color: #111318;
+      box-shadow: none;
+    }
+    .super-plus-btn:hover svg {
+      opacity: 1;
+    }
+    .super-mode.on ~ .super-plus-btn {
+      display: inline-flex;
+    }
+    body.super-mode-active .super-plus-btn {
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.06)),
+        rgba(18,19,21,.78);
+      color: rgba(255,255,255,.78);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.10),
+        0 0 12px rgba(255,255,255,.06);
+    }
+    .default-divider {
+      order: 1;
+      width: 1px;
+      height: 24px;
+      background: #dfe2e7;
+      display: inline-block;
+      flex-shrink: 0;
+      margin: 0 3px;
+    }
+    .input-actions .default-divider {
+      order: 0;
+      margin: 0 2px;
+    }
+    .super-inline-btn {
+      order: 3;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0;
+      padding: 0;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      background: transparent;
+      color: #1f2329;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1;
+      white-space: nowrap;
+      box-shadow: none;
+      min-width: 0;
+      max-width: 200px;
+      overflow: hidden;
+      opacity: 1;
+      transform: translateY(0);
+      transition:
+        max-width .28s cubic-bezier(.22, 1, .36, 1),
+        opacity .16s ease,
+        transform .28s cubic-bezier(.22, 1, .36, 1),
+        background .18s,
+        border-color .18s,
+        color .18s,
+        box-shadow .18s;
+    }
+    .super-inline-btn svg {
+      flex-shrink: 0;
+      opacity: .6;
+      transition: opacity .18s;
+    }
+    .super-inline-btn img {
+      display: block;
+      height: 32px;
+      width: auto;
+    }
+    .super-inline-btn span {
+      opacity: 1;
+      transition: opacity .18s;
+    }
+    .super-inline-btn:hover {
+      border-color: transparent;
+      color: #111318;
+      box-shadow: none;
+    }
+    .super-inline-btn:hover svg,
+    .super-inline-btn:hover span {
+      opacity: 1;
+    }
+    .super-mode.on ~ .super-inline-btn {
+      display: inline-flex;
+    }
+    body.super-mode-active .super-inline-btn {
+      padding: 0 10px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05)),
+        rgba(18,19,21,.78);
+      color: rgba(255,255,255,.76);
+      font-size: 13px;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.10),
+        0 0 12px rgba(255,255,255,.05);
+    }
+    .super-scope-wrap {
+      position: relative;
+      display: none;
+      z-index: 10000;
+    }
+    .super-mode.on ~ .super-scope-wrap {
+      display: inline-flex;
+    }
+    .super-scope-btn,
+    .model-select-btn {
+      height: 32px;
+      align-items: center;
+      gap: 6px;
+      padding: 0 10px;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 999px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05)),
+        rgba(18,19,21,.78);
+      color: rgba(255,255,255,.76);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1;
+      white-space: nowrap;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.10),
+        0 0 12px rgba(255,255,255,.05);
+      transition: background .18s, border-color .18s, color .18s, box-shadow .18s;
+    }
+    .super-scope-btn {
+      display: inline-flex;
+      border-color: transparent;
+    }
+    .model-select-btn {
+      display: none;
+      border-color: transparent;
+    }
+    .super-scope-btn svg,
+    .model-select-btn svg {
+      flex-shrink: 0;
+      opacity: .6;
+      transition: opacity .18s;
+    }
+    .model-select-icon {
+      width: 14px;
+      height: 14px;
+      display: block;
+      flex-shrink: 0;
+      opacity: .8;
+      transition: opacity .18s;
+    }
+    .scope-select-icon {
+      width: 14px;
+      height: 14px;
+      display: block;
+      flex-shrink: 0;
+      opacity: .8;
+      transition: opacity .18s;
+    }
+    .super-scope-btn span,
+    .model-select-btn span {
+      opacity: .8;
+      transition: opacity .18s;
+    }
+    .super-scope-btn .scope-select-icon {
+      opacity: .8;
+    }
+    .super-scope-btn:hover,
+    .model-select-btn:hover {
+      border-color: rgba(255,255,255,.32);
+      color: #fff;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.14),
+        0 0 14px rgba(255,255,255,.08);
+    }
+    .super-scope-btn:hover svg,
+    .super-scope-btn:hover span,
+    .super-scope-btn:hover .scope-select-icon,
+    .model-select-btn:hover .model-select-icon,
+    .model-select-btn:hover svg,
+    .model-select-btn:hover span {
+      opacity: 1;
+    }
+    .super-scope-menu {
+      position: absolute;
+      left: 0;
+      top: calc(100% + 8px);
+      width: 112px;
+      padding: 6px;
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 12px;
+      background: rgba(18,19,21,.96);
+      box-shadow: 0 16px 32px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.06);
+      display: none;
+      z-index: 10001;
+    }
+    .super-scope-wrap.open .super-scope-menu {
+      display: block;
+    }
+    .super-scope-option {
+      width: 100%;
+      height: 30px;
+      padding: 0 10px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: rgba(255,255,255,.66);
+      font-size: 13px;
+      text-align: left;
+      cursor: pointer;
+    }
+    .super-scope-option:hover,
+    .super-scope-option.active {
+      background: rgba(255,255,255,.08);
+      color: #fff;
+    }
+    .input-footer:has(#btn-super.on) .model-select-btn {
+      display: inline-flex;
+    }
 
     .input-actions { display: flex; align-items: center; gap: 14px; }
+    body:not(.super-mode-active) .input-actions {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      gap: 13px;
+      height: 32px;
+    }
+    .input-tools-img {
+      height: 32px;
+      width: auto;
+      display: block;
+      flex-shrink: 0;
+      filter: invert(1) brightness(.12);
+      opacity: .9;
+    }
+    body:not(.super-mode-active) .input-tools-img {
+      display: none;
+    }
+    .default-mic-btn {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      color: #1f2329;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+    }
+    .default-mic-btn img {
+      width: 28px;
+      height: 28px;
+      display: block;
+      object-fit: contain;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    body.super-mode-active .default-mic-btn,
+    body.super-mode-active .input-actions .default-divider {
+      display: none;
+    }
     .act-icon {
       color: rgba(255,255,255,.38);
       cursor: pointer;
@@ -308,14 +1051,170 @@
     .act-icon:hover { color: rgba(255,255,255,.75); }
 
     .send-btn {
-      width: 36px;
-      height: 36px;
-      cursor: pointer;
-      display: block;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: #e9e9ec;
+      color: #fff;
+      cursor: default;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       flex-shrink: 0;
-      transition: opacity .18s;
+      transition: background-color .18s ease, opacity .18s ease, transform .18s ease;
+      opacity: 1;
     }
-    .send-btn:hover { opacity: .8; }
+    .send-btn svg {
+      width: 18px;
+      height: 18px;
+      display: block;
+    }
+    .send-btn:not(:disabled) {
+      background: #000;
+      cursor: pointer;
+    }
+    .send-btn:not(:disabled):hover {
+      background: #000;
+      opacity: .82;
+    }
+    .send-btn:disabled,
+    .send-btn:disabled:hover {
+      background: #e9e9ec;
+      opacity: 1;
+    }
+    .dual-input-footer .send-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border-radius: 50%;
+      filter: none;
+      opacity: 1;
+    }
+
+    /* 新超能态仅切换输入框颜色，保持原有内容与尺寸 */
+    body.super-mode-active .super-mode.on {
+      width: auto;
+      padding: 0;
+      border: none;
+      background: transparent;
+      box-shadow: none;
+      color: #1f2329;
+    }
+    body.super-mode-active .default-tool-img {
+      display: block;
+    }
+    body.super-mode-active .super-mode > .default-tool-img {
+      display: block;
+      opacity: 0;
+      transform: translateY(-5px);
+      pointer-events: none;
+    }
+    body.super-mode-active .super-mode .selected-super-img {
+      display: block;
+      height: 28px;
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    body.super-mode-active .super-context-btn {
+      display: inline-flex;
+      max-width: 110px;
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    body.super-mode-active .super-mode .super-mode-status,
+    body.super-mode-active .super-scope-wrap,
+    body.super-mode-active .model-select-btn,
+    body.super-mode-active .input-tools-img {
+      display: none;
+    }
+    body.super-mode-active #super-scope-wrap {
+      display: none;
+    }
+    body.super-mode-active .input-footer .model-select-btn {
+      display: none !important;
+    }
+    body.super-mode-active .super-plus-btn,
+    body.super-mode-active .super-inline-btn {
+      padding: 0;
+      border-color: transparent;
+      background: transparent;
+      color: #1f2329;
+      box-shadow: none;
+    }
+    body.super-mode-active .super-inline-btn[aria-label="AI 妙记"],
+    body.super-mode-active .super-inline-btn[aria-label="同声传译"],
+    body.super-mode-active .super-inline-btn[aria-label="AI 修图"],
+    body.super-mode-active .super-inline-btn[aria-label="AI 操控"],
+    body.super-mode-active .super-inline-btn[aria-label="AI 翻译"],
+    body.super-mode-active .super-inline-btn[aria-label="更多"] {
+      display: inline-flex;
+      max-width: 0;
+      opacity: 0;
+      transform: translateY(5px);
+      pointer-events: none;
+      border-width: 0;
+    }
+    body.super-mode-active .default-mic-btn {
+      display: inline-flex;
+    }
+    body.super-mode-active .input-actions .default-divider {
+      display: inline-block;
+    }
+    body.super-mode-active .input-actions {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      gap: 13px;
+      height: 32px;
+    }
+    .input-footer .mode-btn,
+    .input-footer .super-plus-btn,
+    .input-footer .super-inline-btn,
+    .input-footer .super-context-btn,
+    .input-footer .default-mic-btn,
+    .input-footer .send-btn,
+    .input-footer .model-select-btn {
+      height: 32px;
+      border-radius: 12px;
+      transition: background-color .16s ease, opacity .16s ease;
+    }
+    .input-footer .mode-btn:hover,
+    .input-footer .super-plus-btn:hover,
+    .input-footer .super-inline-btn:hover,
+    .input-footer .super-context-btn:hover,
+    .input-footer .default-mic-btn:hover,
+    .input-footer .send-btn:hover,
+    .input-footer .model-select-btn:hover,
+    .input-footer .super-mode.menu-open {
+      background: #f2f2f2;
+      opacity: 1;
+    }
+    .input-footer #home-send-btn,
+    .input-footer #home-send-btn:disabled:hover {
+      border-radius: 50%;
+      background: #e9e9ec;
+      opacity: 1;
+    }
+    .input-footer #home-send-btn:not(:disabled),
+    .input-footer #home-send-btn:not(:disabled):hover {
+      border-radius: 50%;
+      background: #000;
+    }
+    body.super-mode-active .input-footer #btn-super,
+    body.super-mode-active .input-footer #btn-super:hover,
+    body.super-mode-active .input-footer #btn-super.menu-open {
+      background: rgba(51, 94, 255, .10);
+      opacity: 1;
+    }
+
+    #super-cards {
+      display: none !important;
+    }
 
     /* ── 底部卡片图片（默认态） ── */
     .cards-img {
@@ -323,60 +1222,632 @@
       display: block;
       margin-top: auto;
     }
+    body:not(.super-mode-active) .cards-img {
+      display: none;
+    }
+
+    .home-default-heading {
+      position: fixed;
+      top: 184px;
+      right: 51px;
+      width: 838px;
+      margin: 0;
+      color: #16181d;
+      font-family: "SongtiCustom", "Songti SC", "PingFang SC", sans-serif;
+      font-size: 30px;
+      font-weight: 400;
+      line-height: 40px;
+      letter-spacing: 0;
+      text-align: center;
+      overflow: hidden;
+    }
+    .heading-split-char {
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(40px);
+      will-change: transform, opacity;
+      animation: headingSplitIn .6s cubic-bezier(.22, 1, .36, 1) forwards;
+      animation-delay: calc(var(--char-index) * 50ms);
+    }
+    @keyframes headingSplitIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    body.super-mode-active .home-default-heading {
+      display: block;
+    }
+
+    .home-default-showcase {
+      position: fixed;
+      top: 254px;
+      right: 51px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+      gap: 12px;
+      width: 838px;
+      margin-top: 0;
+      animation: showcaseSoftIn .46s cubic-bezier(.22, 1, .36, 1) both;
+    }
+    body.super-mode-active .home-default-showcase {
+      display: none;
+    }
+    .home-refresh-wrap {
+      position: fixed;
+      top: 482px;
+      right: 51px;
+      width: 838px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      animation: showcaseSoftIn .46s cubic-bezier(.22, 1, .36, 1) .08s both;
+    }
+    .home-refresh-wrap img {
+      width: 56px;
+      height: 16px;
+      display: block;
+      object-fit: contain;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    body.super-mode-active .home-refresh-wrap {
+      display: flex;
+    }
+    .home-super-showcase {
+      position: fixed;
+      top: 254px;
+      right: 51px;
+      display: none;
+      align-items: flex-start;
+      gap: 12px;
+      width: 838px;
+    }
+    body.super-mode-active .home-super-showcase {
+      display: flex;
+      animation: showcaseSoftIn .5s cubic-bezier(.22, 1, .36, 1) both;
+    }
+    @keyframes showcaseSoftIn {
+      0% {
+        opacity: 0;
+        transform: translateY(12px) scale(.985);
+        filter: blur(3px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+      }
+    }
+    .super-showcase-card {
+      display: block;
+      width: calc((100% - 24px) / 3);
+      height: auto;
+      min-width: 0;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 20px rgba(0, 0, 0, .08));
+      user-select: none;
+      -webkit-user-drag: none;
+      animation: showcaseCardLift .54s cubic-bezier(.22, 1, .36, 1) both;
+      animation-delay: calc(var(--card-index, 0) * 55ms);
+    }
+    .super-showcase-card:nth-child(1) { --card-index: 0; }
+    .super-showcase-card:nth-child(2) { --card-index: 1; }
+    .super-showcase-card:nth-child(3) { --card-index: 2; }
+    @keyframes showcaseCardLift {
+      0% {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .default-card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(18, 24, 33, .08);
+      border-radius: 28px;
+      background: rgba(255,255,255,.92);
+      box-shadow:
+        0 18px 34px rgba(20, 25, 35, .08),
+        inset 0 1px 0 rgba(255,255,255,.8);
+    }
+    .default-card.image-card {
+      flex: 0 0 32.4%;
+      min-width: 440px;
+      height: 404px;
+      display: flex;
+      align-items: stretch;
+    }
+    .default-card.audio-card {
+      flex: 0 0 32.4%;
+      min-width: 440px;
+      height: 404px;
+      padding: 38px 36px 30px;
+    }
+    .default-card.news-card {
+      flex: 0 0 17.6%;
+      min-width: 250px;
+      height: 404px;
+      padding: 34px;
+    }
+    .default-card-main-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: saturate(1.02) contrast(.98);
+    }
+    .default-card-caption {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 30px 0 40px;
+      color: #fff;
+      font-size: 28px;
+      font-weight: 500;
+      background: linear-gradient(90deg, rgba(70,86,88,.78), rgba(190,178,102,.62));
+      backdrop-filter: blur(16px);
+    }
+    .default-card-caption button {
+      height: 48px;
+      min-width: 142px;
+      padding: 0 28px;
+      border: 1px solid rgba(255,255,255,.66);
+      border-radius: 14px;
+      background: rgba(255,255,255,.5);
+      color: #5d5d4f;
+      font: inherit;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .audio-card-head {
+      display: flex;
+      align-items: center;
+      gap: 26px;
+    }
+    .audio-icon {
+      width: 82px;
+      height: 82px;
+      border-radius: 24px;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,.9) 0 14%, transparent 15%),
+        linear-gradient(140deg, #b27cff, #6338ff);
+      box-shadow: 0 12px 26px rgba(104,70,255,.26);
+      position: relative;
+      flex-shrink: 0;
+    }
+    .audio-icon::before,
+    .audio-icon::after {
+      content: "";
+      position: absolute;
+      inset: 19px;
+      border: 5px solid rgba(255,255,255,.88);
+      border-radius: 50%;
+    }
+    .audio-icon::after {
+      inset: 31px;
+      border-width: 4px;
+    }
+    .audio-title {
+      color: #1c2028;
+      font-size: 27px;
+      line-height: 1.48;
+      font-weight: 750;
+      letter-spacing: 0;
+    }
+    .audio-play {
+      margin-left: auto;
+      width: 66px;
+      height: 66px;
+      border: none;
+      border-radius: 50%;
+      background: #f7f8fa;
+      color: #15191f;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+    .audio-play svg {
+      width: 26px;
+      height: 26px;
+      margin-left: 3px;
+      fill: currentColor;
+    }
+    .audio-desc {
+      margin-top: 42px;
+      color: #a9aeb7;
+      font-size: 21px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .audio-progress {
+      position: relative;
+      height: 8px;
+      margin-top: 38px;
+      border-radius: 999px;
+      background: #e3e4e7;
+    }
+    .audio-progress::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 26%;
+      border-radius: inherit;
+      background: #bfc2c7;
+    }
+    .audio-progress::after {
+      content: "";
+      position: absolute;
+      left: 25%;
+      top: 50%;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,.18);
+      transform: translate(-50%, -50%);
+    }
+    .audio-wave {
+      position: absolute;
+      left: 36px;
+      right: 36px;
+      bottom: 0;
+      height: 54px;
+      opacity: .42;
+      background:
+        repeating-linear-gradient(90deg, rgba(210,214,220,.62) 0 3px, transparent 3px 12px);
+      mask-image: linear-gradient(180deg, transparent 0, #000 78%, #000 100%);
+      -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 78%, #000 100%);
+    }
+    .news-card img {
+      width: 100%;
+      height: 218px;
+      object-fit: cover;
+      display: block;
+      border-radius: 16px;
+    }
+    .news-title {
+      margin-top: 28px;
+      color: #141820;
+      font-size: 26px;
+      line-height: 1.45;
+      font-weight: 780;
+      letter-spacing: 0;
+    }
+    .showcase-card-img {
+      display: block;
+      height: auto;
+      object-fit: contain;
+      user-select: none;
+      -webkit-user-drag: none;
+      filter: drop-shadow(0 4px 20px rgba(0, 0, 0, .08));
+      flex: 0 0 auto;
+    }
+    .showcase-card-img + .showcase-card-img {
+      margin-left: 0;
+    }
+    .showcase-card-img.card-one,
+    .showcase-card-img.card-podcast {
+      width: 320px;
+    }
+    .showcase-card-img.card-news {
+      width: 174px;
+      margin-top: 0;
+    }
 
     /* ── 超能卡片区 ── */
     .super-cards-wrap {
       width: 100%;
+      align-self: flex-start;
       display: none;
       flex-direction: column;
       gap: 0;
-      margin-top: auto;
-      padding-bottom: 30px;
+      margin-top: 2px;
+      padding-bottom: 0;
     }
     .super-cards-wrap.visible { display: flex; }
 
-    .super-cards-label {
+    .super-workdir-row {
       display: flex;
       align-items: center;
-      gap: 8px;
-      color: rgba(255,255,255,.45);
-      font-size: 13px;
-      margin-bottom: 16px;
+      gap: 28px;
+      transform: translateY(-10px);
+      margin-bottom: -10px;
     }
-    .super-cards-label svg { opacity: .6; }
+    .super-workdir-btn {
+      align-self: flex-start;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px 0 0;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      background: transparent;
+      color: rgba(255,255,255,.80);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1;
+      white-space: nowrap;
+      box-shadow: none;
+      transition: color .18s, box-shadow .18s, background .18s;
+    }
+    .super-workdir-btn svg,
+    .super-workdir-icon {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+      opacity: .6;
+      transition: opacity .18s;
+    }
+    .super-workdir-btn span {
+      opacity: .8;
+      transition: opacity .18s;
+    }
+    .super-workdir-btn:hover {
+      color: #fff;
+      background: transparent;
+      box-shadow: none;
+    }
+    .super-workdir-btn:hover svg,
+    .super-workdir-btn:hover .super-workdir-icon,
+    .super-workdir-btn:hover span {
+      opacity: 1;
+    }
+    .super-design-option {
+      height: 32px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 0;
+      border: none;
+      background: transparent;
+      color: rgba(255,255,255,.80);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1;
+      white-space: nowrap;
+      transition: color .18s;
+    }
+    .super-cards-wrap.scope-design .super-design-option {
+      display: inline-flex;
+    }
+    .super-design-option svg {
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+      opacity: .68;
+      transition: opacity .18s;
+    }
+    .super-design-option span {
+      opacity: .8;
+      transition: opacity .18s;
+    }
+    .super-design-option .chevron {
+      width: 12px;
+      height: 12px;
+      opacity: .6;
+    }
+    .super-design-option:hover {
+      color: #fff;
+    }
+    .super-design-option:hover svg,
+    .super-design-option:hover span {
+      opacity: 1;
+    }
+
+    .super-cards-label {
+      position: absolute;
+      left: 18px;
+      top: 18px;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      color: rgba(255,255,255,.82);
+      font-size: 16px;
+      font-weight: 650;
+      margin: 0;
+      padding: 0;
+      letter-spacing: 0;
+    }
 
     .super-cards-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      width: 100%;
+      position: fixed;
+      left: 311px;
+      bottom: -42px;
+      display: block;
+      width: 838px;
+      min-height: 330px;
+      padding: 0 18px 62px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.08);
+      border-bottom: none;
+      border-radius: 20px 20px 0 0;
+      background: rgba(31,32,30,.82);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.04),
+        0 18px 52px rgba(0,0,0,.20);
+      z-index: 12;
+      pointer-events: none;
+      transition:
+        background .18s ease,
+        box-shadow .18s ease;
+    }
+    .super-cards-wrap.visible .super-cards-row {
+      pointer-events: auto;
+      animation: superPanelSlideUp .54s cubic-bezier(.16, 1, .3, 1) both;
+    }
+    .super-cards-row:hover {
+      bottom: -42px;
+      min-height: 330px;
+      background: rgba(31,32,30,.90);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.055),
+        0 20px 58px rgba(0,0,0,.26);
+    }
+    .super-cards-row::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-radius: inherit;
+      background: linear-gradient(180deg, rgba(255,255,255,.025), transparent 38%);
+    }
+    @keyframes superPanelSlideUp {
+      0% {
+        opacity: 0;
+        transform: translateY(72px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .super-cards-nav {
+      position: absolute;
+      top: 16px;
+      right: 18px;
+      display: flex;
+      gap: 10px;
+      z-index: 3;
+    }
+    .super-cards-arrow {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 10px;
+      background: rgba(13,14,13,.55);
+      color: rgba(255,255,255,.46);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: color .18s ease, background .18s ease, border-color .18s ease;
+    }
+    .super-cards-arrow:hover {
+      color: rgba(255,255,255,.78);
+      background: rgba(18,19,18,.78);
+      border-color: rgba(255,255,255,.14);
+    }
+    .super-cards-arrow svg {
+      width: 16px;
+      height: 16px;
+    }
+    .super-cards-track {
+      display: flex;
+      gap: 16px;
+      width: max-content;
+      transform: translateX(var(--super-card-offset, 0px));
+      transition: transform .32s cubic-bezier(.22,.8,.36,1);
     }
 
     .super-card {
+      position: relative;
       opacity: 0;
       transform: translateY(40px);
-      transition: opacity .45s ease, transform .45s ease;
+      transition:
+        opacity .45s ease,
+        transform .45s ease,
+        border-color .18s ease,
+        background .18s ease,
+        box-shadow .18s ease;
       cursor: pointer;
-      flex: 1;
+      flex: 0 0 278px;
+      margin-top: 62px;
+      height: 202px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 14px;
+      background: rgba(16,16,15,.78);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+    }
+    .super-card.hidden {
+      display: none;
     }
     .super-card.show {
       opacity: 1;
       transform: translateY(0);
     }
+    .super-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(255,255,255,.12);
+      background: rgba(23,24,22,.94);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.06),
+        0 16px 30px rgba(0,0,0,.24);
+    }
     .super-card img {
-      width: 100%;
-      height: auto;
+      width: calc(100% - 12px);
+      height: 152px;
+      object-fit: cover;
       display: block;
-      border-radius: 14px;
+      margin: 6px 6px 0;
+      border-radius: 10px;
+      filter: saturate(.92) brightness(.9);
+      transition: filter .18s ease;
+    }
+    .super-card:hover img {
+      filter: saturate(1) brightness(1);
+    }
+    .super-card-title {
+      height: 42px;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      color: rgba(255,255,255,.88);
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 1;
+      white-space: nowrap;
+    }
+    .super-card-preview {
+      position: absolute;
+      right: 12px;
+      top: 18px;
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 999px;
+      background: rgba(28,29,28,.94);
+      color: rgba(255,255,255,.92);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity .18s ease, transform .18s ease;
+      box-shadow: 0 10px 24px rgba(0,0,0,.28);
+    }
+    .super-card:hover .super-card-preview {
+      opacity: 1;
+      transform: translateY(0);
     }
     /* ══ 双屏视图 ══ */
     .dual-view {
       display: none;
       position: fixed;
-      left: 80px;
-      top: 55px;
-      right: 0;
-      bottom: 0;
+      left: 261px;
+      top: 53px;
+      width: 939px;
+      height: 717px;
       z-index: 20;
     }
     .dual-view.active {
@@ -406,6 +1877,167 @@
     @keyframes slideInLeft {
       to { transform: translateX(0); opacity: 1; }
     }
+    .dual-left-toolbar {
+      display: none;
+      position: relative;
+      height: 56px;
+      flex: 0 0 56px;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 20px;
+      box-sizing: border-box;
+    }
+    .dual-view.file-open .dual-left-toolbar {
+      display: flex;
+    }
+    .dual-left-toolbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .dual-left-product {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 0;
+      padding: 0;
+      background: transparent;
+      color: #18181b;
+      font-size: 14px;
+      line-height: 20px;
+      font-weight: 400;
+      cursor: pointer;
+    }
+    .dual-left-product img {
+      width: 18px;
+      height: 18px;
+      display: block;
+      object-fit: contain;
+    }
+    .dual-left-product-count {
+      display: inline-block;
+      min-width: 8px;
+      transform: translateY(0);
+    }
+    .dual-left-product-count.bumping {
+      animation: productCountBump .34s cubic-bezier(.22, 1, .36, 1) both;
+    }
+    @keyframes productCountBump {
+      0% { opacity: 0; transform: translateY(9px); }
+      58% { opacity: 1; transform: translateY(-2px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .dual-left-more {
+      width: 18px;
+      height: 18px;
+      border: 0;
+      padding: 0;
+      background: transparent;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: default;
+    }
+    .dual-left-more img {
+      width: 18px;
+      height: 18px;
+      display: block;
+      object-fit: contain;
+    }
+    .dual-product-popover {
+      position: absolute;
+      right: 62px;
+      top: 42px;
+      width: 300px;
+      padding: 8px;
+      border: 1px solid rgba(18,24,33,.08);
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 10px 28px rgba(0,0,0,.11);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-3px) scale(.985);
+      transform-origin: 70% 0;
+      transition: opacity .18s ease, transform .18s cubic-bezier(.22, 1, .36, 1), visibility 0s linear .18s;
+      z-index: 20;
+      pointer-events: none;
+    }
+    .dual-product-popover::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: -14px;
+      height: 14px;
+    }
+    .dual-left-toolbar:hover .dual-product-popover,
+    .dual-left-toolbar:has(.dual-left-product:hover) .dual-product-popover,
+    .dual-left-toolbar:has(.dual-left-product:focus-visible) .dual-product-popover,
+    .dual-product-popover:hover {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+      transition-delay: 0s;
+      pointer-events: auto;
+    }
+    .dual-product-popover-item {
+      width: 100%;
+      min-height: 58px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: background-color .16s ease;
+    }
+    .dual-product-popover-item:hover {
+      background: #f6f7f9;
+    }
+    .dual-product-popover-item.product-web {
+      display: none;
+    }
+    .dual-view.has-two-products .dual-product-popover-item.product-web {
+      display: flex;
+    }
+    .dual-product-popover-icon {
+      width: 24px;
+      height: 24px;
+      flex: 0 0 24px;
+      object-fit: contain;
+      display: block;
+    }
+    .dual-product-popover-copy {
+      min-width: 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .dual-product-popover-title {
+      color: #18181b;
+      font-size: 14px;
+      line-height: 20px;
+      font-weight: 400;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .dual-product-popover-time {
+      color: #b7b8bd;
+      font-size: 12px;
+      line-height: 16px;
+      font-weight: 400;
+      white-space: nowrap;
+    }
 
     /* 右侧从右推入 */
     .dual-right {
@@ -430,6 +2062,7 @@
       display: flex;
       flex-direction: column;
       gap: 16px;
+      overflow-anchor: none;
     }
     .chat-messages::-webkit-scrollbar { display: none; }
 
@@ -442,11 +2075,22 @@
       border-radius: 14px 4px 14px 14px;
       padding: 10px 16px;
       min-height: 46px;
-      display: flex;
-      align-items: center;
+      display: block;
       color: rgba(255,255,255,.88);
       font-size: 14px;
       line-height: 26px;
+      box-sizing: border-box;
+      contain: layout paint;
+      transform: translateZ(0);
+      will-change: transform;
+      overflow-anchor: none;
+    }
+    .bubble-user-text {
+      display: block;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      transform: translateZ(0);
     }
 
     /* ── AI 链路样式 ── */
@@ -581,6 +2225,919 @@
       justify-content: space-between;
       margin-top: 8px;
     }
+    .dual-super-controls,
+    .dual-send-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+    .dual-super-controls .super-plus-btn,
+    .dual-super-controls .super-context-btn,
+    .dual-super-controls .dual-super-mode-btn,
+    .dual-send-actions .default-mic-btn,
+    .dual-send-actions .send-btn {
+      height: 32px;
+      border-radius: 12px;
+      transition: background-color .16s ease, opacity .16s ease;
+    }
+    .dual-super-controls .super-plus-btn:hover,
+    .dual-super-controls .super-context-btn:hover,
+    .dual-super-controls .dual-super-mode-btn:hover,
+    .dual-send-actions .default-mic-btn:hover {
+      background: #f2f2f2;
+      opacity: 1;
+    }
+    .dual-super-controls .super-plus-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+    }
+    .dual-super-controls .super-plus-btn img {
+      width: auto;
+      height: 18px;
+      display: block;
+    }
+    .dual-control-divider {
+      width: 1px;
+      height: 18px;
+      margin: 0 2px;
+      background: #d8d8dc;
+      display: inline-block;
+      flex: 0 0 1px;
+    }
+    .dual-super-mode-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: auto;
+      padding: 0;
+      border: 0;
+      background: rgba(51, 94, 255, .10);
+      box-shadow: none;
+    }
+    .dual-super-mode-btn .selected-super-img {
+      width: auto;
+      height: 28px;
+      object-fit: contain;
+      position: static;
+      flex: 0 0 auto;
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .dual-super-mode-btn .compact-super-img {
+      width: 48px;
+      height: 28px;
+      object-fit: contain;
+      display: none;
+      flex: 0 0 auto;
+    }
+    .dual-super-controls .super-context-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: auto;
+      padding: 0 4px;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+      max-width: 110px;
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .dual-super-controls .super-context-btn img {
+      height: 28px;
+      width: auto;
+      display: block;
+    }
+    .dual-send-actions .default-mic-btn {
+      display: inline-flex;
+      flex-shrink: 0;
+    }
+    .dual-send-actions .default-divider {
+      width: 1px;
+      height: 18px;
+      background: #d8d8dc;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .dual-view.file-open .dual-send-actions .default-divider {
+      display: inline-block;
+    }
+    .dual-input-footer #dual-send-btn,
+    .dual-input-footer #dual-send-btn:disabled:hover {
+      border-radius: 50%;
+      background: #e9e9ec;
+      color: #fff;
+      filter: none;
+      opacity: 1;
+      cursor: default;
+    }
+    .dual-input-footer #dual-send-btn:not(:disabled),
+    .dual-input-footer #dual-send-btn:not(:disabled):hover {
+      border-radius: 50%;
+      background: #000;
+      cursor: pointer;
+    }
+    .dual-quick-capsule {
+      height: 34px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 3px 5px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.10);
+      flex-shrink: 0;
+    }
+    .dual-quick-btn {
+      width: 28px;
+      height: 28px;
+      border: none;
+      border-radius: 50%;
+      background: #050505;
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+      transition: opacity .18s;
+    }
+    .dual-quick-btn:hover { opacity: .86; }
+    .dual-quick-btn img {
+      width: 15px;
+      height: 15px;
+      display: block;
+      flex-shrink: 0;
+    }
+    .dual-input-footer .model-select-btn {
+      display: inline-flex;
+    }
+    .dual-input-footer .model-select-btn {
+      background: transparent;
+      box-shadow: none;
+    }
+    .dual-input-footer .model-select-btn:hover {
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05)),
+        rgba(18,19,21,.78);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.14),
+        0 0 14px rgba(255,255,255,.08);
+    }
+
+    /* 发送后先进入单栏对话，生成文件后再打开双窗 */
+    .dual-view.conversation-only {
+      background: transparent;
+      overflow: visible;
+    }
+    .dual-view.conversation-only .dual-left {
+      width: 100%;
+      border-right: 0;
+      transform: none;
+      opacity: 1;
+      animation: none;
+    }
+    .dual-view.conversation-only .dual-right {
+      display: none !important;
+      opacity: 0;
+      transform: translateX(32px);
+      animation: none;
+    }
+    .dual-view.conversation-only .chat-messages {
+      padding: 40px 52px 24px;
+      gap: 22px;
+    }
+    .dual-view.conversation-only .bubble-user {
+      max-width: 50%;
+      padding: 14px 22px;
+      border-radius: 16px 16px 2px 16px;
+      background: #f1f2f4;
+      color: #3f4046;
+      font-size: 16px;
+      line-height: 1.75;
+    }
+    .dual-view.conversation-only .chain-meta {
+      color: #747983;
+      font-size: 14px;
+    }
+    .dual-view.conversation-only .chain-meta.step,
+    .dual-view.conversation-only .chain-meta.canvas,
+    .dual-view.conversation-only .chain-meta.think {
+      color: #747983;
+    }
+    .dual-view.conversation-only .chain-text {
+      color: #18181b;
+      font-size: 15px;
+      line-height: 1.8;
+    }
+    .dual-view.conversation-only .chain-meta.think.shimmering {
+      background: linear-gradient(100deg, #747983 0%, #747983 35%, #18181b 50%, #747983 65%, #747983 100%);
+      background-size: 260% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+    .dual-view.conversation-only .dual-input-wrap {
+      position: relative;
+      padding: 12px 52px 16px;
+    }
+    .dual-view.conversation-only .dual-input-glow {
+      position: relative;
+      z-index: 2;
+      border-radius: 20px;
+      background: #335eff;
+      animation: none;
+      box-shadow: 0 0 0 2px rgba(51,94,255,.20), 0 18px 60px rgba(51,94,255,.14);
+    }
+    .dual-input-bottom-light {
+      position: absolute;
+      left: 50%;
+      top: 29%;
+      z-index: -2;
+      width: calc(100% + 140px);
+      height: calc(100% + 140px);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    .dual-input-bottom-light img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: fill;
+      user-select: none;
+      -webkit-user-drag: none;
+      transition: opacity .30s cubic-bezier(.22, 1, .36, 1);
+    }
+    .dual-input-bottom-light .light-fast {
+      opacity: 0;
+    }
+    .dual-input-bottom-light .light-super {
+      opacity: .8;
+      animation: superInputLightBreath 2.4s ease-in-out infinite;
+    }
+    .dual-energy-label {
+      position: absolute;
+      left: 50px;
+      top: -1px;
+      z-index: 4;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 0 10px 0 8px;
+      border-radius: 11px 11px 11px 0;
+      background: #335eff;
+      color: #fff;
+      box-shadow: 0 5px 14px rgba(51, 94, 255, .20);
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1;
+      letter-spacing: 0;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .dual-energy-label img {
+      width: 14px;
+      height: 14px;
+      flex: 0 0 14px;
+      object-fit: contain;
+    }
+    .dual-energy-label.refreshing {
+      animation: dualEnergyRefresh .34s cubic-bezier(.22, 1, .36, 1) both;
+    }
+    @keyframes dualEnergyRefresh {
+      0% { transform: translateY(0) scale(1); }
+      45% { transform: translateY(-1px) scale(1.035); }
+      100% { transform: translateY(0) scale(1); }
+    }
+    .dual-view.file-open.running .dual-energy-label {
+      display: none;
+    }
+    .dual-view.conversation-only .dual-energy-label {
+      left: 51.5px;
+      top: -1px;
+    }
+    .dual-view.conversation-only .dual-input-glow {
+      height: 108px;
+      padding: 1.5px;
+      box-sizing: border-box;
+      border-radius: 10px 20px 20px 20px;
+      background: #335eff;
+      box-shadow: 0 0 0 2px rgba(51,94,255,.20);
+    }
+    .dual-view.conversation-only .dual-input-inner {
+      border-radius: 8.5px 18.5px 18.5px 18.5px;
+      min-height: 0;
+      height: 100%;
+      padding: 0;
+      display: block;
+      background: #fff;
+    }
+    .dual-view.conversation-only .dual-input-field {
+      position: absolute;
+      left: 20px;
+      top: 12px;
+      width: calc(100% - 40px);
+      height: 32px;
+      min-height: 32px;
+      font-size: 16px;
+      line-height: 28px;
+      overflow: hidden;
+    }
+    .dual-view.conversation-only .dual-input-footer {
+      position: absolute;
+      left: 20px;
+      right: 14px;
+      bottom: 13px;
+      height: 32px;
+      margin-top: 0;
+      gap: 12px;
+      justify-content: space-between;
+    }
+    .dual-view.conversation-only .dual-super-controls {
+      gap: 1px;
+      height: 32px;
+      max-width: calc(100% - 92px);
+      overflow: hidden;
+    }
+    .dual-view.conversation-only .dual-super-mode-btn {
+      width: auto;
+      gap: 0;
+      flex: 0 0 auto;
+      padding: 0 10px;
+      border-radius: 12px;
+      background-color: rgba(51, 94, 255, .12) !important;
+      box-shadow: none;
+    }
+    .dual-view.conversation-only .dual-super-mode-btn .selected-super-img {
+      width: auto;
+      height: 28px;
+      object-fit: contain;
+    }
+    .dual-view.conversation-only .dual-super-controls .super-context-btn {
+      flex: 0 0 auto;
+      max-width: 92px;
+      padding: 0;
+    }
+    .dual-view.conversation-only .dual-send-actions {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      gap: 13px;
+      height: 32px;
+    }
+    .dual-view.conversation-only .dual-send-actions .default-mic-btn {
+      order: 0;
+    }
+    .dual-view.conversation-only .dual-send-actions .default-divider {
+      order: 1;
+    }
+    .dual-view.conversation-only .dual-send-actions #dual-send-btn {
+      order: 2;
+    }
+    .dual-run-status {
+      display: none;
+      position: absolute;
+      left: 52px;
+      right: 52px;
+      top: -15px;
+      height: 56px;
+      padding: 0 20px;
+      align-items: flex-start;
+      justify-content: space-between;
+      border-radius: 18px 18px 0 0;
+      background: #ebefff;
+      color: #335eff;
+      font-size: 12px;
+      line-height: 18px;
+      box-sizing: border-box;
+      z-index: 1;
+      transform-origin: bottom center;
+    }
+    .dual-run-status-label,
+    .dual-run-status-time {
+      height: 27px;
+      display: inline-flex;
+      align-items: center;
+      margin-top: 0;
+    }
+    .dual-run-status-label {
+      font-weight: 700;
+    }
+    .dual-run-status-time {
+      font-weight: 400;
+    }
+    .dual-view.conversation-only.running .dual-run-status {
+      display: flex;
+    }
+    .dual-view.conversation-only.running .dual-run-status,
+    .dual-view.file-open.running .dual-run-status {
+      animation: dualRunStatusGrow .34s cubic-bezier(.22,.8,.36,1) both;
+    }
+    .dual-view.conversation-only.run-finished .dual-run-status,
+    .dual-view.file-open.run-finished .dual-run-status {
+      display: flex;
+      animation: dualRunStatusGrow .24s cubic-bezier(.22,.8,.36,1) both;
+    }
+    .dual-view.file-open.running .dual-run-status {
+      display: flex;
+    }
+    .dual-view.conversation-only.running .dual-energy-label,
+    .dual-view.file-open.running .dual-energy-label {
+      display: none;
+    }
+    .dual-view.conversation-only.run-finished .dual-energy-label,
+    .dual-view.file-open.run-finished .dual-energy-label {
+      display: none;
+    }
+    .dual-view.conversation-only.running .dual-input-glow,
+    .dual-view.file-open.running .dual-input-glow {
+      height: 108px;
+      border-radius: 20px;
+    }
+    .dual-view.conversation-only.running .dual-input-inner,
+    .dual-view.file-open.running .dual-input-inner {
+      border-radius: 18.5px;
+    }
+    @keyframes dualRunStatusGrow {
+      from {
+        opacity: 0;
+        transform: translateY(27px) scaleY(.72);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scaleY(1);
+      }
+    }
+    .dual-view.conversation-only .dual-input-inner {
+      min-height: 0;
+      height: 100%;
+      padding: 0;
+      display: block;
+      border-radius: 8.5px 18.5px 18.5px 18.5px;
+      background: #fff;
+    }
+    .dual-view.conversation-only .dual-input-field {
+      color: #18181b;
+    }
+    .dual-view.conversation-only .dual-input-field::placeholder {
+      color: #b9bec7;
+    }
+    .dual-view.conversation-only .chain-code {
+      margin: 10px 0 18px;
+      padding: 14px 18px;
+      border: 1px solid #e6e8ee;
+      border-radius: 12px;
+      background: #f8f9fb;
+      color: #18181b;
+      font-size: 14px;
+      line-height: 1.8;
+      font-family: 'SF Mono', 'Menlo', monospace;
+    }
+    .dual-view.conversation-only .search-results {
+      margin: 8px 0 20px;
+      padding: 0;
+      list-style: none;
+      color: #2b72d6;
+      font-size: 15px;
+      line-height: 2.05;
+    }
+    .dual-view.conversation-only .search-results li {
+      display: grid;
+      grid-template-columns: 28px minmax(0, 1fr);
+      gap: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .dual-view.conversation-only .chain-meta.search,
+    .dual-view.conversation-only .chain-meta.tool,
+    .dual-view.conversation-only .chain-meta.code {
+      margin-top: 18px;
+      color: #747983;
+      font-size: 15px;
+    }
+    .generated-file-card {
+      width: min(520px, 72%);
+      margin: 10px 0 18px;
+      padding: 14px 16px;
+      border: 1px solid #e2e4e9;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 4px 16px rgba(0,0,0,.06);
+      appearance: none;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #18181b;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+    }
+    .generated-file-card:hover {
+      border-color: rgba(51,94,255,.40);
+      box-shadow: 0 8px 24px rgba(51,94,255,.12);
+      transform: translateY(-1px);
+    }
+    .generated-file-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 7px;
+      background: rgba(51,94,255,.10);
+      color: #335eff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 36px;
+    }
+    .generated-file-copy {
+      min-width: 0;
+      flex: 1;
+    }
+    .generated-file-name {
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 20px;
+    }
+    .generated-file-meta {
+      margin-top: 2px;
+      color: #8a8f98;
+      font-size: 12px;
+      line-height: 18px;
+    }
+    .generated-file-open {
+      color: #335eff;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .generated-file-card.file-preview {
+      position: relative;
+      width: 384px;
+      height: 114px;
+      margin: 14px 0 20px;
+      padding: 20px;
+      border: 1px solid rgba(18,24,33,.08);
+      border-radius: 16px;
+      background: #fff;
+      overflow: hidden;
+      box-shadow: 0 10px 28px rgba(0,0,0,.10);
+      box-sizing: border-box;
+      align-items: flex-start;
+      gap: 0;
+    }
+    .generated-file-card.file-preview:hover {
+      border-color: rgba(18,24,33,.08);
+      box-shadow: 0 14px 34px rgba(0,0,0,.13);
+      transform: translateY(-1px);
+    }
+    .file-preview-icon {
+      position: absolute;
+      left: 20px;
+      top: 20px;
+      width: 18px;
+      height: 18px;
+      color: #335eff;
+      display: block;
+      object-fit: contain;
+    }
+    .file-preview-title {
+      position: absolute;
+      left: 20px;
+      top: 50px;
+      max-width: 230px;
+      color: #3f4046;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 20px;
+      white-space: nowrap;
+    }
+    .file-preview-time {
+      position: absolute;
+      left: 20px;
+      top: 74px;
+      color: #b7b8bd;
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 18px;
+      white-space: nowrap;
+    }
+    .file-preview-art {
+      position: absolute;
+      right: -12px;
+      top: 22px;
+      width: 132px;
+      height: 92px;
+      border: 1px solid rgba(18,24,33,.10);
+      border-radius: 12px 0 0 0;
+      background: #fff;
+      box-shadow: -10px 10px 24px rgba(0,0,0,.08);
+      transform-origin: 0 100%;
+      transition: transform .28s cubic-bezier(.22,.8,.36,1), box-shadow .28s ease;
+    }
+    .generated-file-card.file-preview:hover .file-preview-art {
+      transform: perspective(360px) rotateY(-13deg) rotateZ(-2deg) translateX(-8px);
+      box-shadow: -16px 12px 28px rgba(0,0,0,.12);
+    }
+    .file-preview-art::before {
+      content: "";
+      position: absolute;
+      left: 18px;
+      top: 18px;
+      width: 64px;
+      height: 10px;
+      border-radius: 3px;
+      background: #ececec;
+      box-shadow:
+        0 18px 0 #f0f0f0,
+        0 36px 0 #f3f3f3;
+    }
+    .file-preview-art::after {
+      content: "";
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: -8px;
+      height: 42px;
+      border-radius: 8px 8px 0 0;
+      background: linear-gradient(180deg, #eef7ff 0%, #f8fbff 100%);
+    }
+    .generated-file-actions {
+      margin: -4px 0 20px;
+      display: flex;
+      align-items: center;
+      width: 384px;
+    }
+    .generated-file-actions img {
+      width: 320px;
+      height: 24px;
+      display: block;
+      object-fit: contain;
+      object-position: left center;
+    }
+    .dual-view.file-open {
+      left: 0;
+      top: 56px;
+      width: 1200px;
+      height: 714px;
+      background: transparent;
+      justify-content: flex-start;
+      align-items: stretch;
+    }
+    .dual-view.file-open .dual-left {
+      position: relative;
+      z-index: 1;
+      width: 460px;
+      flex: 0 0 460px;
+      background: #fcfcfc;
+      border-right: 1px solid rgba(18,24,33,.08);
+    }
+    .dual-view.file-open .chat-messages {
+      padding: 0 20px 20px;
+      gap: 18px;
+      transform: translateY(-7px);
+    }
+    .dual-view.file-open .bubble-user {
+      align-self: flex-end;
+      max-width: 84%;
+      background: #f1f2f4;
+      color: #3f4046;
+      border-radius: 16px 16px 2px 16px;
+    }
+    .dual-view.file-open .chain-meta,
+    .dual-view.file-open .chain-meta.step,
+    .dual-view.file-open .chain-meta.canvas,
+    .dual-view.file-open .chain-meta.think,
+    .dual-view.file-open .chain-meta.search,
+    .dual-view.file-open .chain-meta.tool,
+    .dual-view.file-open .chain-meta.code {
+      color: #747983;
+    }
+    .dual-view.file-open .chain-text {
+      color: #18181b;
+    }
+    .dual-view.file-open .chain-code {
+      border: 1px solid #e6e8ee;
+      background: #f8f9fb;
+      color: #18181b;
+    }
+    .dual-view.file-open .generated-file-card.file-preview {
+      width: 312px;
+      height: 68px;
+      margin: 14px 0 16px;
+      padding: 0;
+      border: 1px solid rgba(18,24,33,.08);
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,.08);
+      transform: none;
+      overflow: hidden;
+    }
+    .dual-view.file-open .generated-file-card.file-preview:hover {
+      border-color: rgba(18,24,33,.08);
+      box-shadow: 0 6px 16px rgba(0,0,0,.10);
+      transform: none;
+    }
+    .dual-view.file-open .generated-file-card.file-preview > * {
+      display: block;
+    }
+    .dual-view.file-open .generated-file-card.file-preview .file-preview-icon {
+      left: 20px;
+      top: 25px;
+      width: 18px;
+      height: 18px;
+    }
+    .dual-view.file-open .generated-file-card.file-preview .file-preview-title {
+      left: 54px;
+      top: 14px;
+      max-width: 230px;
+      color: #3f4046;
+      font-size: 14px;
+      line-height: 20px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .dual-view.file-open .generated-file-card.file-preview .file-preview-time {
+      left: 54px;
+      top: 40px;
+      color: #b7b8bd;
+      font-size: 12px;
+      line-height: 18px;
+    }
+    .dual-view.file-open .generated-file-card.file-preview .file-preview-art {
+      display: none;
+    }
+    .dual-view.file-open .generated-file-card.file-preview.web-app-preview {
+      width: 312px;
+      height: 68px;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: url('deployed-assets/007-网站卡片-691ad70c.png') left top / 100% 100% no-repeat;
+      box-shadow: none;
+      overflow: visible;
+    }
+    .dual-view.file-open .generated-file-card.file-preview.web-app-preview > * {
+      display: none;
+    }
+    .dual-view.file-open .dual-input-wrap {
+      position: relative;
+      padding: 12px 20px 16px;
+    }
+    .dual-view.file-open .dual-energy-label {
+      left: 19.5px;
+      top: -1px;
+    }
+    .dual-view.file-open .dual-run-status {
+      left: 18px;
+      right: 18px;
+    }
+    .dual-view.file-open .dual-input-glow {
+      position: relative;
+      z-index: 2;
+      height: 108px;
+      padding: 1.5px;
+      box-sizing: border-box;
+      border-radius: 10px 20px 20px 20px;
+      background: #335eff;
+      animation: none;
+      box-shadow: 0 0 0 2px rgba(51,94,255,.20), 0 18px 60px rgba(51,94,255,.14);
+    }
+    .dual-view.file-open .dual-input-inner {
+      min-height: 0;
+      height: 100%;
+      padding: 0;
+      display: block;
+      border-radius: 8.5px 18.5px 18.5px 18.5px;
+      background: #fff;
+    }
+    .dual-view.file-open .dual-input-field {
+      position: absolute;
+      left: 20px;
+      top: 12px;
+      width: calc(100% - 40px);
+      height: 32px;
+      min-height: 32px;
+      font-size: 16px;
+      line-height: 28px;
+      overflow: hidden;
+      color: #18181b;
+    }
+    .dual-view.file-open .dual-input-field::placeholder {
+      color: #b9bec7;
+    }
+    .dual-view.file-open .dual-input-footer {
+      position: absolute;
+      left: 20px;
+      right: 14px;
+      bottom: 13px;
+      height: 32px;
+      margin-top: 0;
+      gap: 12px;
+      justify-content: space-between;
+    }
+    .dual-view.file-open .dual-super-controls {
+      gap: 8px;
+      height: 32px;
+      max-width: calc(100% - 92px);
+      overflow: hidden;
+    }
+    .dual-view.file-open .dual-super-mode-btn {
+      width: 58px;
+      gap: 6px;
+      flex: 0 0 58px;
+      padding: 0 10px;
+      border-radius: 12px;
+      background-color: rgba(51, 94, 255, .12) !important;
+    }
+    .dual-view.file-open .dual-super-mode-btn::after {
+      content: none;
+      color: #335eff;
+      font-size: 18px;
+      line-height: 1;
+      font-weight: 600;
+      transform: translateY(-1px);
+    }
+    .dual-view.file-open .dual-super-mode-btn .selected-super-img {
+      display: none;
+    }
+    .dual-view.file-open .dual-super-mode-btn .compact-super-img {
+      display: block;
+      width: 48px;
+      height: 28px;
+      object-fit: contain;
+    }
+    .dual-view.file-open .dual-super-controls .super-context-btn {
+      flex: 0 0 auto;
+      max-width: 92px;
+      padding: 0;
+    }
+    .dual-view.file-open .dual-send-actions {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      gap: 13px;
+      height: 32px;
+    }
+    .dual-view.file-open .dual-send-actions .default-mic-btn {
+      order: 0;
+    }
+    .dual-view.file-open .dual-send-actions .default-divider {
+      order: 1;
+    }
+    .dual-view.file-open .dual-send-actions #dual-send-btn {
+      order: 2;
+    }
+    .dual-view.file-open .dual-right {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      flex: 0 0 740px;
+      width: 740px;
+      background: #fff;
+      box-shadow: -8px 0 11px rgba(0,0,0,.10);
+      opacity: 1;
+      transform: translateX(0);
+      animation: slideInRight .38s cubic-bezier(.22,.8,.36,1) forwards;
+    }
+    .dual-view.file-open .result-canvas {
+      border: 0;
+      border-radius: 0;
+      background: #fff;
+      color: #18181b;
+      min-height: 0;
+      align-items: stretch;
+      justify-content: stretch;
+    }
+    .dual-view.file-open .canvas-panel {
+      background: #fff;
+    }
+    .dual-view.file-open .canvas-toolbar {
+      display: none !important;
+    }
+    .dual-view.file-open.website-open .result-body {
+      padding: 0;
+      gap: 0;
+    }
+    .dual-view.file-open .result-body {
+      padding: 0;
+      gap: 0;
+    }
+    .dual-view.file-open.website-open .result-canvas {
+      width: 100%;
+      height: 100%;
+    }
 
     /* 双屏关闭动画 */
     .dual-view.closing {
@@ -605,45 +3162,210 @@
     @keyframes slideInRight {
       to { transform: translateX(0); opacity: 1; }
     }
+    .dual-view.file-open {
+      animation: dualFileOpen .5s cubic-bezier(.16, 1, .3, 1) both;
+    }
+    .dual-view.file-open .dual-left {
+      animation: dualFileLeftIn .5s cubic-bezier(.16, 1, .3, 1) .02s both;
+    }
+    .dual-view.file-open .dual-right {
+      animation: dualFileRightIn .54s cubic-bezier(.16, 1, .3, 1) .08s both;
+    }
+    @keyframes dualFileOpen {
+      0% {
+        opacity: .94;
+        clip-path: inset(0 18% 0 0 round 0px);
+      }
+      100% {
+        opacity: 1;
+        clip-path: inset(0 0 0 0 round 0px);
+      }
+    }
+    @keyframes dualFileLeftIn {
+      0% {
+        opacity: 0;
+        transform: translateX(-18px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    @keyframes dualFileRightIn {
+      0% {
+        opacity: 0;
+        transform: translateX(42px);
+        box-shadow: -2px 0 11px rgba(0,0,0,0);
+      }
+      62% {
+        opacity: 1;
+        transform: translateX(-4px);
+        box-shadow: -10px 0 11px rgba(0,0,0,.10);
+      }
+      100% {
+        opacity: 1;
+        transform: translateX(0);
+        box-shadow: -8px 0 11px rgba(0,0,0,.10);
+      }
+    }
 
-    .result-tabs {
+    .result-toolbar {
       display: flex;
       align-items: center;
-      gap: 2px;
-      padding: 0 16px;
-      height: 44px;
-      border-bottom: 1px solid rgba(255,255,255,.07);
+      justify-content: space-between;
+      height: 56px;
+      padding: 0 24px;
+      border-bottom: 1px solid rgba(18,24,33,.08);
+      background: #fff;
       flex-shrink: 0;
     }
-    .result-tab {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 13px;
-      color: rgba(255,255,255,.4);
-      cursor: pointer;
-      transition: all .15s;
+    .result-toolbar-time {
+      color: #b7b8bd;
+      font-size: 15px;
+      line-height: 22px;
       white-space: nowrap;
     }
-    .result-tab:hover { color: rgba(255,255,255,.7); }
-    .result-tab.active {
-      color: #fff;
-      background: rgba(255,255,255,.07);
+    .result-toolbar-toggle {
+      display: none;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      height: 32px;
+      padding: 2px;
+      border-radius: 999px;
+      background: #f2f3f5;
+      border: 1px solid rgba(18,24,33,.06);
+      box-sizing: border-box;
+      align-items: center;
+      gap: 2px;
     }
-    .result-tab-right {
-      margin-left: auto;
+    .result-toolbar-toggle span {
+      height: 26px;
+      min-width: 48px;
+      padding: 0 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      color: #747983;
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1;
+      white-space: nowrap;
+    }
+    .result-toolbar-toggle span.active {
+      background: #fff;
+      color: #18181b;
+      box-shadow: 0 1px 4px rgba(18,24,33,.08);
+    }
+    .result-toolbar-actions {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
-    .close-tag {
-      font-size: 12px;
-      color: rgba(255,255,255,.4);
+    .result-toolbar-icon {
+      display: block;
+      width: auto;
+      height: 18px;
+      object-fit: contain;
+      flex-shrink: 0;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    .result-toolbar-icon.square {
+      width: 18px;
+      height: 18px;
+    }
+    .web-preview-action {
+      position: relative;
+      height: 32px;
+      min-width: 32px;
+      padding: 0 7px;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
+      transition: background-color .16s ease, transform .12s ease, opacity .16s ease;
     }
-    .close-tag:hover { color: rgba(255,255,255,.7); }
+    .web-preview-action:hover {
+      background: #f2f2f2;
+    }
+    .web-preview-action:active {
+      background: #e9e9ec;
+      transform: scale(.94);
+    }
+    .web-preview-action img {
+      display: block;
+      object-fit: contain;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    .web-preview-action::after {
+      content: attr(data-tip);
+      position: absolute;
+      left: 50%;
+      top: calc(100% + 8px);
+      transform: translate(-50%, -4px);
+      height: 26px;
+      padding: 0 10px;
+      border-radius: 8px;
+      background: rgba(24,24,27,.92);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      line-height: 1;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      z-index: 20;
+      transition: opacity .16s ease, transform .16s ease, visibility .16s ease;
+    }
+    .web-preview-action:hover::after {
+      opacity: 1;
+      visibility: visible;
+      transform: translate(-50%, 0);
+    }
+    .result-toolbar-divider {
+      width: 1px;
+      height: 18px;
+      background: #d9d9dc;
+      flex: 0 0 1px;
+    }
+    .dual-view.file-open.website-open .result-toolbar {
+      position: relative;
+    }
+    .dual-view.file-open.website-open .result-toolbar-time {
+      color: #000;
+      font-size: 16px;
+      line-height: 24px;
+      font-weight: 500;
+    }
+    .dual-view.file-open.website-open .result-toolbar-time::before {
+      content: "2026世界杯观赛助手";
+    }
+    .dual-view.file-open.website-open .result-toolbar-time {
+      font-size: 0;
+    }
+    .dual-view.file-open.website-open .result-toolbar-time::before {
+      font-size: 16px;
+    }
+    .dual-view.file-open.website-open .result-toolbar-toggle {
+      display: inline-flex;
+    }
+    .dual-view.file-open.website-open .result-toolbar-actions > :nth-child(1),
+    .dual-view.file-open.website-open .result-toolbar-actions > :nth-child(2),
+    .dual-view.file-open.website-open .result-toolbar-actions > :nth-child(3),
+    .dual-view.file-open.website-open .result-toolbar-actions > :nth-child(4) {
+      display: none;
+    }
 
     .result-body {
       flex: 1;
@@ -653,6 +3375,7 @@
       flex-direction: column;
       gap: 16px;
       position: relative;
+      background: #fff;
     }
     .result-body::before {
       content: "";
@@ -1055,42 +3778,136 @@
 
   <!-- 背景外壳 -->
   <div class="bg-shell"></div>
-
+  <div class="dual-title-shell" aria-hidden="true"></div>
   <!-- ══ 首页视图 ══ -->
   <div class="content-area" id="home-view">
   <div class="content-inner">
 
     <!-- 标题 -->
     <div class="hero-title">
-      <img class="hero-logo" src="ball-dark.gif" alt="logo" />
-      <span class="hero-title-text">天禧AI，你的专属超能搭档</span>
+      <img class="hero-logo" src="deployed-assets/008-深色球-1-(1)-e93b5e24.gif" alt="logo" />
+      <div class="hero-copy">
+        <span class="hero-title-text">有什么我能帮你的吗<span class="hero-title-question">？</span></span>
+        <div class="hero-super-desc" id="hero-super-desc">本地运行、自主规划、 安全可控</div>
+      </div>
     </div>
 
     <!-- Tab 导航 -->
     <div class="tab-bar">
-      <img src="Feature.png" alt="功能导航" />
+      <img src="deployed-assets/009-Feature-2c76f089.png" alt="功能导航" />
+    </div>
+
+    <h1 class="home-default-heading" aria-label="有什么我能帮你的吗"><span>有什么我能帮你的吗</span><span class="heading-question">？</span></h1>
+
+    <div class="home-default-showcase" aria-label="推荐内容">
+      <img class="showcase-card-img card-one" src="deployed-assets/010-首页卡片1-79700b13.png" alt="订阅联想云主机" />
+      <img class="showcase-card-img card-podcast" src="deployed-assets/011-首页卡片2-7ccf45d2.png" alt="新手如何入手数据分析技能" />
+      <img class="showcase-card-img card-news" src="deployed-assets/012-首页卡片3-c0c28343.png" alt="世界杯海报" />
+    </div>
+    <div class="home-refresh-wrap" aria-hidden="true">
+      <img src="deployed-assets/013-换一换-afc6aedf.png" alt="" />
+    </div>
+
+    <div class="home-super-showcase" aria-label="超能模式内容">
+      <img class="super-showcase-card" src="deployed-assets/014-1-f05c1366.png" alt="生成阅读销售分析报告" />
+      <img class="super-showcase-card" src="deployed-assets/015-2-e24cdcf5.png" alt="制定市场营销策略规划" />
+      <img class="super-showcase-card" src="deployed-assets/016-3-d3237955.png" alt="跨语言技术文档翻译及排版" />
     </div>
 
     <!-- 主输入框（彩虹光圈） -->
     <div class="input-wrap">
       <div class="input-glow">
+        <div class="input-bottom-light" aria-hidden="true">
+          <img class="light-fast" src="deployed-assets/017-彩色light-2e955276.png" alt="" />
+          <img class="light-super" src="deployed-assets/018-light-32e14f17.png" alt="" />
+        </div>
+        <div class="super-energy-label" aria-label="剩余 5000 能量值">
+          <img src="deployed-assets/019-nengliang-afd1e89e.png" alt="" />
+          <span>剩余 5000 能量值</span>
+        </div>
         <div class="input-inner">
           <textarea class="input-field" rows="4"
-            placeholder="有什么我可以帮你的？"></textarea>
+            placeholder="发消息…"></textarea>
           <div class="input-footer">
             <div class="mode-btns">
               <!-- 超能 -->
-              <div class="mode-btn super-mode off" id="btn-super" onclick="toggleSuper(this)">
-                <svg class="super-mode-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
-                  <polygon points="13 2 4 14 12 14 11 22 20 10 12 10 13 2"/>
-                </svg>
-                <span class="super-mode-label">超能</span>
+              <div class="mode-btn super-mode off" id="btn-super" role="button" aria-haspopup="menu" aria-expanded="false" onclick="toggleQuickModeMenu(event)">
+                <img class="default-tool-img" src="deployed-assets/020-input-quick-0626-63cf59ba.png" alt="快速" />
+                <img class="selected-super-img" src="deployed-assets/021-超能-5ccc3e75.png" alt="超能" />
                 <span class="super-mode-status">
                   <span class="super-mode-dot"></span>
                   <span class="super-mode-title">超能模式已激活</span>
                   <span class="super-mode-energy">剩余 5000 能量值</span>
                 </span>
+                <div class="quick-mode-menu" id="quick-mode-menu" role="menu">
+                  <button class="quick-mode-option active" type="button" role="menuitem" data-mode="quick" onclick="selectInputMode(event, false)">
+                    <svg class="quick-mode-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <path d="M10.5 1.5L9.99991 7L13 8L6 15L7 10L4 8.5L10.5 1.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+                    </svg>
+                    <span class="quick-mode-copy">
+                      <span class="quick-mode-title">快速模式</span>
+                      <span class="quick-mode-desc">推理速度更快，适合日常问答</span>
+                    </span>
+                    <img class="quick-mode-check" src="deployed-assets/022-toggles-c42eaa00.png" alt="" aria-hidden="true" />
+                  </button>
+                  <button class="quick-mode-option" type="button" role="menuitem" data-mode="super" onclick="selectInputMode(event, true)">
+                    <svg class="quick-mode-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <path d="M2.6299 13.3701C1.887 12.628 1.78902 11.3593 2.40104 9.76898C2.63868 9.16574 2.93481 8.58663 3.28213 8.0397L3.30699 8.00021L3.28286 7.96073C2.91726 7.3765 2.61747 6.79373 2.40104 6.23144C1.78975 4.64109 1.887 3.37246 2.6299 2.62956C3.03937 2.22009 3.62726 2.00073 4.33725 2.00073C5.37921 2.00073 6.65368 2.46577 7.9618 3.28471L8.00055 3.30958L8.0393 3.28471C9.34815 2.46577 10.6219 2 11.6639 2C12.3746 2 12.9625 2.21936 13.3712 2.62883C14.1126 3.371 14.2106 4.64109 13.5993 6.23071C13.3613 6.83397 13.066 7.41304 12.7175 7.95999L12.6926 7.99948L12.7175 8.03823C13.0831 8.62319 13.3829 9.20522 13.5986 9.76752C14.2106 11.3579 14.1134 12.6272 13.3712 13.3694C12.9617 13.7789 12.3738 13.999 11.6639 13.999C10.6219 13.999 9.34742 13.5332 8.0393 12.7142L7.99982 12.6908L7.96107 12.715C6.65222 13.5339 5.37847 13.9997 4.33652 13.9997C3.62579 13.9997 3.03864 13.7796 2.6299 13.3701ZM12.5969 10.1536C12.4601 9.79676 12.2832 9.43117 12.0777 9.06264L12.0229 8.96612L11.9556 9.05387C11.1158 10.1405 10.1408 11.1155 9.05421 11.9553L8.96646 12.0233L9.06298 12.0774C10.0194 12.6141 10.9341 12.927 11.6631 12.927C12.0748 12.927 12.3987 12.8261 12.6122 12.6126C12.8316 12.3932 12.931 12.0467 12.9252 11.6284C12.9193 11.208 12.8089 10.7042 12.5969 10.1536ZM7.95741 11.3601L7.99982 11.3908L8.04223 11.3601C9.32402 10.442 10.4479 9.32157 11.3699 8.04262L11.4014 8.00021L11.3699 7.9578C10.9087 7.31869 10.397 6.71766 9.83951 6.16052C9.28285 5.60544 8.68176 5.09678 8.04223 4.63962L7.99982 4.61038L7.95741 4.64109C6.67544 5.55887 5.55129 6.67907 4.629 7.9578L4.59829 8.00021L4.629 8.04335C5.09038 8.68242 5.60295 9.28273 6.16013 9.8399C6.7168 10.395 7.3179 10.9029 7.95741 11.3601ZM12.6122 3.38855C12.398 3.1743 12.0741 3.0734 11.6631 3.0734C10.9334 3.0734 10.0194 3.38708 9.06298 3.92378L8.96646 3.97789L9.05421 4.04516C10.1416 4.8841 11.1167 5.85921 11.9556 6.94655L12.0229 7.0343L12.077 6.93778C12.2832 6.56926 12.4601 6.20366 12.5969 5.84683C12.8089 5.29624 12.92 4.79244 12.9259 4.37201C12.931 3.95376 12.8316 3.6079 12.6122 3.38855ZM3.40205 5.84683C3.54975 6.22267 3.72377 6.58754 3.92266 6.93851L3.97677 7.03357L4.04404 6.94655C4.88299 5.85922 5.8581 4.88411 6.94543 4.04516L7.03318 3.97789L6.93666 3.92378C5.98025 3.38635 5.06552 3.0734 4.33652 3.0734C3.92485 3.0734 3.60093 3.1743 3.38742 3.38781C3.16806 3.6079 3.06862 3.95376 3.07447 4.37201C3.07959 4.79244 3.19073 5.29624 3.40205 5.84683ZM3.40205 10.1536C3.19 10.7042 3.08032 11.208 3.07447 11.6284C3.06862 12.0467 3.16733 12.3925 3.38742 12.6119C3.60166 12.8261 3.92558 12.927 4.33652 12.927C5.06552 12.927 5.97952 12.6141 6.93666 12.0774L7.03244 12.0233L6.9447 11.9553C5.85762 11.1163 4.88277 10.1412 4.04404 9.05387L3.97604 8.96612L3.92193 9.06264C3.72341 9.41361 3.5492 9.77817 3.40205 10.1536Z" fill="currentColor" stroke="currentColor" stroke-width="0.104457"/>
+                      <circle cx="8.00022" cy="7.99826" r="0.888889" fill="currentColor"/>
+                    </svg>
+                    <span class="quick-mode-copy">
+                      <span class="quick-mode-title">超能模式</span>
+                      <span class="quick-mode-desc">模型能力更强，可能会使用更多能量值</span>
+                    </span>
+                    <img class="quick-mode-check" src="deployed-assets/022-toggles-c42eaa00.png" alt="" aria-hidden="true" />
+                  </button>
+                </div>
               </div>
+              <button class="super-context-btn" type="button" aria-label="选择项目">
+                <img src="deployed-assets/023-选择项目-fd3f29f1.png" alt="选择项目" />
+              </button>
+              <button class="super-context-btn" type="button" aria-label="选择技能">
+                <img src="deployed-assets/024-选择技能-080c7760.png" alt="选择技能" />
+              </button>
+              <div class="super-scope-wrap" id="super-scope-wrap">
+                <button class="super-scope-btn" type="button" aria-label="选择超能处理范围" onclick="toggleScopeMenu(event)">
+                  <img class="scope-select-icon" src="deployed-assets/025-qipao-1-03c59364.svg" alt="" />
+                  <span id="super-scope-label">通用</span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 9l6 6 6-6"/>
+                  </svg>
+                </button>
+                <div class="super-scope-menu" role="menu">
+                  <button class="super-scope-option active" type="button" role="menuitem" onclick="selectSuperScope('通用')">通用</button>
+                  <button class="super-scope-option" type="button" role="menuitem" onclick="selectSuperScope('写作')">写作</button>
+                  <button class="super-scope-option" type="button" role="menuitem" onclick="selectSuperScope('设计')">设计</button>
+                  <button class="super-scope-option" type="button" role="menuitem" onclick="selectSuperScope('PPT')">PPT</button>
+                  <button class="super-scope-option" type="button" role="menuitem" onclick="selectSuperScope('研发')">研发</button>
+                  <button class="super-scope-option" type="button" role="menuitem" onclick="selectSuperScope('金融')">金融</button>
+                </div>
+              </div>
+              <button class="super-plus-btn" type="button" aria-label="添加超能任务">
+                <img class="default-plus-img" src="deployed-assets/026-input-plus-0626-eaf59efc.png" alt="" />
+              </button>
+              <span class="default-divider" aria-hidden="true"></span>
+              <button class="super-inline-btn" type="button" aria-label="AI 妙记">
+                <img class="default-tool-img" src="deployed-assets/027-input-note-0626-d7e87007.png" alt="AI 妙记" />
+              </button>
+              <button class="super-inline-btn" type="button" aria-label="同声传译">
+                <img class="default-tool-img" src="deployed-assets/028-input-translate-live-0626-ea075aee.png" alt="同声传译" />
+              </button>
+              <button class="super-inline-btn" type="button" aria-label="AI 修图">
+                <img class="default-tool-img" src="deployed-assets/029-input-edit-image-0626-80a46531.png" alt="AI 修图" />
+              </button>
+              <button class="super-inline-btn" type="button" aria-label="AI 操控">
+                <img class="default-tool-img" src="deployed-assets/030-input-control-0626-4dedae78.png" alt="AI 操控" />
+              </button>
+              <button class="super-inline-btn" type="button" aria-label="AI 翻译">
+                <img class="default-tool-img" src="deployed-assets/031-input-translate-0626-23160f46.png" alt="AI 翻译" />
+              </button>
+              <button class="super-inline-btn" type="button" aria-label="更多">
+                <img class="default-tool-img" src="deployed-assets/032-input-more-0626-b3d92415.png" alt="更多" />
+              </button>
               <!-- 智能体 -->
               <div class="mode-btn agent-mode off">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;">
@@ -1101,9 +3918,25 @@
               </div>
             </div>
             <div class="input-actions">
-              <img src="btns.png" alt="操作按钮" style="height:28px;display:block;" />
+              <button class="model-select-btn" type="button" aria-label="选择模型">
+                <img class="model-select-icon" src="deployed-assets/033-旗舰-e2e329e9.svg" alt="" />
+                <span>旗舰</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 9l6 6 6-6"/>
+                </svg>
+              </button>
+              <img class="input-tools-img" id="home-tools-img" src="deployed-assets/034-btns1-46dbb764.png" alt="操作按钮" />
+              <button class="default-mic-btn" type="button" aria-label="语音输入">
+                <img src="deployed-assets/035-语音-5b2afea7.png" alt="" />
+              </button>
+              <span class="default-divider" aria-hidden="true"></span>
               <!-- 发送 -->
-              <img src="send_btn.png" alt="发送" title="发送" class="send-btn" id="home-send-btn" />
+              <button class="send-btn" id="home-send-btn" type="button" aria-label="发送" title="发送" disabled>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M5 12h14"/>
+                  <path d="M13 6l6 6-6 6"/>
+                </svg>
+              </button>
             </div>
           </div>
         </div>
@@ -1111,27 +3944,159 @@
     </div>
 
     <!-- 底部卡片图片（默认态） -->
-    <img class="cards-img" id="cards-default" src="Card.png" alt="内容卡片" />
+    <img class="cards-img" id="cards-default" src="deployed-assets/036-Card-384356f0.png" alt="内容卡片" />
 
     <!-- 超能模式卡片 -->
     <div class="super-cards-wrap" id="super-cards">
-      <div class="super-cards-label">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="12" y1="8" x2="12" y2="12"/>
-          <line x1="12" y1="16" x2="12.01" y2="16" stroke-width="3" stroke-linecap="round"/>
-        </svg>
-        沉浸式场景推荐体验
+      <div class="super-workdir-row">
+        <button class="super-workdir-btn" type="button" aria-label="选择工作目录">
+          <img class="super-workdir-icon" src="deployed-assets/037-文件夹-f941156e.svg" alt="" />
+          <span>选择工作目录</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </button>
+        <button class="super-design-option" type="button" aria-label="自动选择风格参考">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="7" cy="15" r="3"/>
+            <circle cx="16" cy="8" r="3"/>
+            <path d="M9.4 12.8l4.2-2.6"/>
+            <path d="M18.7 5.3l1.1-1.1"/>
+            <path d="M19.9 8h1.5"/>
+            <path d="M16 3.1V1.7"/>
+          </svg>
+          <span>自动选择风格参考</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </button>
+        <button class="super-design-option" type="button" aria-label="高保真">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="4" width="16" height="16" rx="1.5"/>
+            <path d="M4 10h16"/>
+            <path d="M10 10v10"/>
+          </svg>
+          <span>高保真</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </button>
+        <button class="super-design-option" type="button" aria-label="不指定组件库">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 8l-4 4 4 4"/>
+            <path d="M16 8l4 4-4 4"/>
+          </svg>
+          <span>不指定组件库</span>
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </button>
       </div>
       <div class="super-cards-row">
+        <div class="super-cards-label">
+          灵感提示词
+        </div>
+        <div class="super-cards-nav">
+          <button class="super-cards-arrow" type="button" aria-label="上一组灵感提示词" onclick="slideSuperCards(-1)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 18l-6-6 6-6"/>
+            </svg>
+          </button>
+          <button class="super-cards-arrow" type="button" aria-label="下一组灵感提示词" onclick="slideSuperCards(1)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
+          </button>
+        </div>
+        <div class="super-cards-track" id="super-cards-track">
         <div class="super-card" id="sc1">
-          <img src="Card1.png" alt="精读论文写综述" />
+          <img src="deployed-assets/038-Saas数据看板-74bc07cc.png" alt="SaaS 数据看板" />
+          <div class="super-card-preview">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+              <circle cx="12" cy="12" r="3.5"/>
+              <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"/>
+            </svg>
+            预览
+          </div>
+          <div class="super-card-title">SaaS 数据看板</div>
         </div>
         <div class="super-card" id="sc2">
-          <img src="Card2.png" alt="设计智能大屏" />
+          <img src="deployed-assets/039-AI研究官网-7c2dd5d8.png" alt="AI 研究官网" />
+          <div class="super-card-preview">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+              <circle cx="12" cy="12" r="3.5"/>
+              <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"/>
+            </svg>
+            预览
+          </div>
+          <div class="super-card-title">AI 研究官网</div>
         </div>
         <div class="super-card" id="sc3">
-          <img src="Card3.png" alt="长文转汇报PPT" />
+          <img src="deployed-assets/040-个人作品集-b01b4ec1.png" alt="个人作品集" />
+          <div class="super-card-preview">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+              <circle cx="12" cy="12" r="3.5"/>
+              <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"/>
+            </svg>
+            预览
+          </div>
+          <div class="super-card-title">个人作品集</div>
+        </div>
+        <div class="super-card" id="sc4">
+          <img src="deployed-assets/041-商品详情页-80bd3df2.png" alt="商品详情页" />
+          <div class="super-card-preview">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+              <circle cx="12" cy="12" r="3.5"/>
+              <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"/>
+            </svg>
+            预览
+          </div>
+          <div class="super-card-title">商品详情页</div>
+        </div>
+        <div class="super-card" id="sc5">
+          <img src="deployed-assets/042-儿童英语app-92f63f67.png" alt="儿童英语 App" />
+          <div class="super-card-preview">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+              <circle cx="12" cy="12" r="3.5"/>
+              <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"/>
+            </svg>
+            预览
+          </div>
+          <div class="super-card-title">儿童英语 App</div>
+        </div>
+        <div class="super-card" id="sc6">
+          <img src="deployed-assets/043-产品营销卡片-b4c070c9.png" alt="产品营销卡片" />
+          <div class="super-card-preview">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+              <circle cx="12" cy="12" r="3.5"/>
+              <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"/>
+            </svg>
+            预览
+          </div>
+          <div class="super-card-title">产品营销卡片</div>
+        </div>
+        <div class="super-card" id="sc7">
+          <img src="deployed-assets/044-金融资产页-9e337e01.png" alt="金融资产页" />
+          <div class="super-card-preview">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+              <circle cx="12" cy="12" r="3.5"/>
+              <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"/>
+            </svg>
+            预览
+          </div>
+          <div class="super-card-title">金融资产页</div>
+        </div>
+        <div class="super-card" id="sc8">
+          <img src="deployed-assets/045-数据报告也-f2b7572b.png" alt="数据报告页" />
+          <div class="super-card-preview">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+              <circle cx="12" cy="12" r="3.5"/>
+              <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"/>
+            </svg>
+            预览
+          </div>
+          <div class="super-card-title">数据报告页</div>
+        </div>
         </div>
       </div>
     </div>
@@ -1144,20 +4109,78 @@
 
     <!-- 左侧对话区 -->
     <div class="dual-left">
+      <div class="dual-left-toolbar" aria-label="对话区操作">
+        <div class="dual-left-toolbar-actions">
+          <button class="dual-left-product" type="button" aria-label="产物 1">
+            <img src="deployed-assets/046-对话区产物-icon-8d756298.png" alt="" />
+            <span class="dual-left-product-count" id="dual-product-count">1</span>
+          </button>
+          <button class="dual-left-more" type="button" aria-label="更多">
+            <img src="deployed-assets/047-对话区更多-4fed1372.png" alt="" />
+          </button>
+        </div>
+        <div class="dual-product-popover" role="menu" aria-label="产物列表">
+          <button class="dual-product-popover-item product-doc" type="button" role="menuitem" onclick="openGeneratedFile('document')">
+            <img class="dual-product-popover-icon" src="deployed-assets/048-文档icon-c4f424fe.png" alt="" aria-hidden="true" />
+            <div class="dual-product-popover-copy">
+              <div class="dual-product-popover-title">2026美加墨世界杯完整观赛指南</div>
+              <div class="dual-product-popover-time">创建时间：06-28 16:16</div>
+            </div>
+          </button>
+          <button class="dual-product-popover-item product-web" type="button" role="menuitem" onclick="openGeneratedFile('website')">
+            <img class="dual-product-popover-icon" src="deployed-assets/049-网站icon-b63cd7ca.png" alt="" aria-hidden="true" />
+            <div class="dual-product-popover-copy">
+              <div class="dual-product-popover-title">2026美加墨世界杯完整观赛指南网站</div>
+              <div class="dual-product-popover-time">创建时间：06-28 16:20</div>
+            </div>
+          </button>
+        </div>
+      </div>
       <div class="chat-messages" id="chat-messages"></div>
       <div class="dual-input-wrap">
+        <div class="dual-energy-label" aria-label="剩余 5000 能量值">
+          <img src="deployed-assets/019-nengliang-afd1e89e.png" alt="" />
+          <span>剩余 <span id="dual-energy-value">5000</span> 能量值</span>
+        </div>
+        <div class="dual-run-status" id="dual-run-status" aria-live="polite">
+          <span class="dual-run-status-label" id="dual-run-status-label">阅读中...</span>
+          <span class="dual-run-status-time" id="dual-run-status-time">0.0s</span>
+        </div>
         <div class="dual-input-glow">
+          <div class="dual-input-bottom-light" aria-hidden="true">
+            <img class="light-fast" src="deployed-assets/017-彩色light-2e955276.png" alt="" />
+            <img class="light-super" src="deployed-assets/018-light-32e14f17.png" alt="" />
+          </div>
           <div class="dual-input-inner">
-            <textarea class="dual-input-field" id="dual-input" placeholder="描述任务" rows="3"></textarea>
+            <textarea class="dual-input-field" id="dual-input" placeholder="输入问题或任务，/选择技能" rows="3"></textarea>
             <div class="dual-input-footer">
-              <div class="mode-btns">
-                <div class="mode-btn off">
-                  <img src="智能体btn.png" alt="智能体" />
-                </div>
+              <div class="dual-super-controls" id="dual-mode-btns">
+                <button class="super-plus-btn" type="button" aria-label="添加超能任务">
+                  <img class="default-plus-img" src="deployed-assets/026-input-plus-0626-eaf59efc.png" alt="" />
+                </button>
+                <span class="dual-control-divider" aria-hidden="true"></span>
+                <button class="mode-btn super-mode on dual-super-mode-btn" type="button" aria-label="超能">
+                  <img class="selected-super-img" src="deployed-assets/021-超能-5ccc3e75.png" alt="超能" />
+                  <img class="compact-super-img" src="deployed-assets/050-超能icon双窗-67af6cd8.png" alt="" />
+                </button>
+                <button class="super-context-btn" type="button" aria-label="选择项目">
+                  <img src="deployed-assets/023-选择项目-fd3f29f1.png" alt="选择项目" />
+                </button>
+                <button class="super-context-btn" type="button" aria-label="选择技能">
+                  <img src="deployed-assets/024-选择技能-080c7760.png" alt="选择技能" />
+                </button>
               </div>
-              <div class="input-actions">
-                <img src="btns.png" alt="操作按钮" style="height:28px;display:block;" />
-                <img src="send_btn.png" alt="发送" class="send-btn" onclick="sendDual()" />
+              <div class="dual-send-actions">
+                <button class="default-mic-btn" type="button" aria-label="语音输入">
+                  <img src="deployed-assets/035-语音-5b2afea7.png" alt="" />
+                </button>
+                <span class="default-divider" aria-hidden="true"></span>
+                <button class="send-btn" id="dual-send-btn" type="button" aria-label="发送" title="发送" onclick="sendDual()" disabled>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M5 12h14"/>
+                    <path d="M13 6l6 6-6 6"/>
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
@@ -1167,30 +4190,23 @@
 
     <!-- 右侧结果区 -->
     <div class="dual-right">
-      <!-- 顶部 tab 栏 -->
-      <div class="result-tabs">
-        <div class="result-tab active">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          画布
+      <!-- 顶部预览功能条 -->
+      <div class="result-toolbar">
+        <div class="result-toolbar-time">修改于 16:15</div>
+        <div class="result-toolbar-toggle" aria-label="预览和代码切换">
+          <span class="active">预览</span>
+          <span>代码</span>
         </div>
-        <div class="result-tab">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          设计文件
-        </div>
-        <div class="result-tab">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          预览
-        </div>
-        <div class="result-tab">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="12" rx="2"/><path d="M8 21l4-6 4 6"/><path d="M9 9h4"/><path d="M15.5 6.5l2 2L13 13l-2.5.5.5-2.5 4.5-4.5z"/></svg>
-          风格参考
-        </div>
-        <div class="result-tab">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-          计划
-        </div>
-        <div class="result-tab-right">
-          <span class="close-tag" onclick="closeDual()">关键设计决策 ●</span>
+        <div class="result-toolbar-actions">
+          <img class="result-toolbar-icon" src="deployed-assets/051-撤销返回-092b6a92.png" alt="撤销返回" />
+          <span class="result-toolbar-divider" aria-hidden="true"></span>
+          <img class="result-toolbar-icon" src="deployed-assets/052-复制-b918b2cd.png" alt="复制" />
+          <img class="result-toolbar-icon" src="deployed-assets/053-下载-56e2ea80.png" alt="下载" />
+          <img class="result-toolbar-icon" src="deployed-assets/054-分享-d8910e24.png" alt="分享" />
+          <img class="result-toolbar-icon square" src="deployed-assets/055-更多-2-f2663d0a.png" alt="更多" />
+          <span class="result-toolbar-divider" aria-hidden="true"></span>
+          <img class="result-toolbar-icon square" src="deployed-assets/056-放大-0b7c0825.png" alt="放大" />
+          <img class="result-toolbar-icon square" src="deployed-assets/057-关闭-2-2680dcf6.png" alt="关闭" onclick="closePreviewToConversation()" />
         </div>
       </div>
       <!-- 内容区 -->
@@ -1199,7 +4215,7 @@
         <!-- 画布容器 -->
         <div class="result-canvas" id="result-canvas">
           <div id="canvas-loading">
-            <video id="loading-video" autoplay loop muted playsinline src="loading.mp4"></video>
+            <video id="loading-video" autoplay loop muted playsinline src="deployed-assets/058-loading-57196992.mp4"></video>
           </div>
           <!-- 各 tab 内容面板 -->
           <div class="canvas-panel" id="panel-canvas" style="display:none;"></div>
@@ -1217,7 +4233,7 @@
         </div>
         <!-- 底部工具栏 -->
         <div class="canvas-toolbar" id="canvas-toolbar" style="display:none;">
-          <img class="canvas-toolbar-img" src="tools.png" alt="画布工具条" />
+          <img class="canvas-toolbar-img" src="deployed-assets/059-tools-888730b2.png" alt="画布工具条" />
         </div>
       </div>
     </div>
@@ -1226,45 +4242,341 @@
 
   <script>
     /* ── 超能模式切换 ── */
-    function toggleSuper(btn) {
-      const isOn = btn.classList.toggle('on');
-      btn.classList.toggle('off', !isOn);
-      const glow = document.querySelector('.input-glow');
-      glow.classList.toggle('active', isOn);
-      const defaultCards = document.getElementById('cards-default');
-      const superCards = document.getElementById('super-cards');
-      if (isOn) {
-        defaultCards.style.display = 'none';
-        superCards.classList.add('visible');
-        ['sc1','sc2','sc3'].forEach((id, i) => {
-          const el = document.getElementById(id);
-          el.classList.remove('show');
-          setTimeout(() => el.classList.add('show'), 80 + i * 120);
-        });
-      } else {
-        ['sc1','sc2','sc3'].forEach(id => document.getElementById(id).classList.remove('show'));
-        setTimeout(() => {
-          superCards.classList.remove('visible');
-          defaultCards.style.display = 'block';
-        }, 200);
+    const SUPER_SCOPE_TITLES = {
+      '通用': 'AI原生的人机协作平台',
+      '设计': '想法即产品，设计即代码'
+    };
+    const SUPER_SCOPE_DESCS = {
+      '通用': '本地运行、自主规划、 安全可控',
+      '设计': '描述你的目标， 天禧AI会规划结构、生成界面并同步预览，让想法快速变成可交付设计'
+    };
+    const SUPER_CARD_TITLES = {
+      '通用': [
+        '生成月度销售分析报告',
+        '制定市场营销策略规划',
+        '跨语言技术文档翻译及排版',
+        '编写负责业务流程自动化脚本'
+      ],
+      '设计': [
+        'SaaS 数据看板',
+        'AI 研究官网',
+        '个人作品集',
+        '商品详情页',
+        '儿童英语 App',
+        '产品营销卡片',
+        '金融资产页',
+        '数据报告页'
+      ]
+    };
+
+    function updateSuperDesc(scope = '通用') {
+      const desc = document.getElementById('hero-super-desc');
+      if (desc) {
+        desc.textContent = SUPER_SCOPE_DESCS[scope] || SUPER_SCOPE_DESCS['通用'];
+        desc.style.opacity = '';
       }
     }
 
-    /* ── 首页发送 → 进入双屏 ── */
+    function updateHeroTitle(scope = '通用', isOn = document.body.classList.contains('super-mode-active')) {
+      const heroTitle = document.querySelector('.hero-title-text');
+      if (!heroTitle) return;
+      heroTitle.textContent = isOn
+        ? (SUPER_SCOPE_TITLES[scope] || SUPER_SCOPE_TITLES['通用'])
+        : '有什么我能帮你的吗？';
+      heroTitle.classList.toggle('super-copy', isOn);
+    }
+
+    function updateSuperCards(scope = '通用') {
+      const titles = SUPER_CARD_TITLES[scope] || SUPER_CARD_TITLES['通用'];
+      document.querySelectorAll('#super-cards .super-card').forEach((card, i) => {
+        const title = titles[i] || '';
+        card.classList.toggle('hidden', !title);
+        card.classList.remove('show');
+        const titleEl = card.querySelector('.super-card-title');
+        const img = card.querySelector('img');
+        if (titleEl && title) titleEl.textContent = title;
+        if (img && title) img.alt = title;
+      });
+    }
+
+    function fillSuperContent(scope = '通用') {
+      updateSuperDesc(scope);
+      selectSuperScope(scope, true);
+    }
+
+    function setHeadingText(text, animate = false) {
+      const heading = document.querySelector('.home-default-heading');
+      if (!heading) return;
+      const renderHeadingParts = (target, content, split = false) => {
+        target.textContent = '';
+        Array.from(content).forEach((char, index) => {
+          const span = document.createElement('span');
+          if (split) {
+            span.className = 'heading-split-char';
+            span.style.setProperty('--char-index', index);
+            span.setAttribute('aria-hidden', 'true');
+          }
+          if (char === '？' || char === '?') span.classList.add('heading-question');
+          span.textContent = char === ' ' ? '\u00a0' : char;
+          target.appendChild(span);
+        });
+      };
+      const animationToken = String((Number(heading.dataset.splitToken) || 0) + 1);
+      heading.dataset.splitToken = animationToken;
+      heading.setAttribute('aria-label', text);
+      if (!animate) {
+        renderHeadingParts(heading, text, false);
+        return;
+      }
+      const renderSplitText = () => {
+        if (heading.dataset.splitToken !== animationToken) return;
+        renderHeadingParts(heading, text, true);
+      };
+      if (document.fonts && document.fonts.status !== 'loaded') {
+        document.fonts.ready.then(renderSplitText);
+      } else {
+        renderSplitText();
+      }
+    }
+
+    function applySuperState(btn, isOn, options = {}) {
+      btn.classList.toggle('on', isOn);
+      btn.classList.toggle('off', !isOn);
+      document.body.classList.toggle('super-mode-active', isOn);
+      const glow = document.querySelector('.input-glow');
+      glow.classList.toggle('active', isOn);
+      setHeadingText(
+        isOn ? '需要我帮你完成什么任务？' : '有什么我能帮你的吗？',
+        isOn
+      );
+      document.querySelectorAll('.quick-mode-option').forEach(option => {
+        option.classList.toggle('active', option.dataset.mode === (isOn ? 'super' : 'quick'));
+      });
+      const field = document.querySelector('.input-field');
+      if (field) {
+        field.placeholder = isOn
+          ? '描述你的复杂任务，在超能模式下，天禧AI将帮你深度处理'
+          : '发消息…';
+      }
+      const toolsImg = document.getElementById('home-tools-img');
+      if (toolsImg) toolsImg.src = 'deployed-assets/034-btns1-46dbb764.png';
+      const defaultCards = document.getElementById('cards-default');
+      if (defaultCards) defaultCards.style.display = 'none';
+      closeScopeMenu();
+    }
+
+    function toggleQuickModeMenu(event) {
+      event.stopPropagation();
+      const menu = document.getElementById('quick-mode-menu');
+      const btn = document.getElementById('btn-super');
+      if (!menu || !btn) return;
+      const isSuper = document.body.classList.contains('super-mode-active');
+      document.querySelectorAll('.quick-mode-option').forEach(option => {
+        option.classList.toggle('active', option.dataset.mode === (isSuper ? 'super' : 'quick'));
+      });
+      const willOpen = !menu.classList.contains('open');
+      menu.classList.toggle('open', willOpen);
+      btn.classList.toggle('menu-open', willOpen);
+      btn.setAttribute('aria-expanded', String(willOpen));
+    }
+
+    function closeQuickModeMenu() {
+      const menu = document.getElementById('quick-mode-menu');
+      if (menu) menu.classList.remove('open');
+      const btn = document.getElementById('btn-super');
+      if (btn) {
+        btn.classList.remove('menu-open');
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    }
+
+    function selectInputMode(event, isSuper) {
+      event.stopPropagation();
+      const btn = document.getElementById('btn-super');
+      if (btn) applySuperState(btn, isSuper);
+      closeQuickModeMenu();
+    }
+
+    function toggleScopeMenu(event) {
+      event.stopPropagation();
+      const wrap = document.getElementById('super-scope-wrap');
+      if (wrap) wrap.classList.toggle('open');
+    }
+
+    function closeScopeMenu() {
+      const wrap = document.getElementById('super-scope-wrap');
+      if (wrap) wrap.classList.remove('open');
+    }
+
+    function hideSuperCards() {
+      const superCards = document.getElementById('super-cards');
+      if (!superCards) return;
+      superCards.querySelectorAll('.super-card').forEach(el => el.classList.remove('show'));
+      setTimeout(() => {
+        superCards.classList.remove('visible');
+        superCards.classList.remove('scope-design');
+      }, 200);
+    }
+
+    function showSuperCards(scope = '通用') {
+      const superCards = document.getElementById('super-cards');
+      if (!superCards) return;
+      superCards.classList.add('visible');
+      superCards.classList.toggle('scope-design', scope === '设计');
+      updateSuperCards(scope);
+      slideSuperCards(0, true);
+      superCards.querySelectorAll('.super-card:not(.hidden)').forEach((el, i) => {
+        el.classList.remove('show');
+        setTimeout(() => el.classList.add('show'), 80 + i * 120);
+      });
+    }
+
+    function selectSuperScope(scope, silent = false) {
+      const label = document.getElementById('super-scope-label');
+      if (label) label.textContent = scope;
+      document.querySelectorAll('.super-scope-option').forEach(option => {
+        option.classList.toggle('active', option.textContent.trim() === scope);
+      });
+      updateHeroTitle(scope);
+      updateSuperDesc(scope);
+      if (scope === '通用' || scope === '设计') showSuperCards(scope);
+      else hideSuperCards();
+      if (!silent) closeScopeMenu();
+    }
+
+    document.addEventListener('click', () => {
+      closeScopeMenu();
+      closeQuickModeMenu();
+    });
+
+    let runStatusTimer = null;
+    let runStatusStart = 0;
+    let runStatusTotalStart = 0;
+    let runStatusFinishTimer = null;
+
+    function setDualEnergy(value) {
+      const energyEl = document.getElementById('dual-energy-value');
+      const labelEl = document.querySelector('.dual-energy-label');
+      if (energyEl) energyEl.textContent = value;
+      if (labelEl) {
+        labelEl.setAttribute('aria-label', `剩余 ${value} 能量值`);
+        if (value !== '5000') {
+          labelEl.classList.remove('refreshing');
+          void labelEl.offsetWidth;
+          labelEl.classList.add('refreshing');
+        } else {
+          labelEl.classList.remove('refreshing');
+        }
+      }
+    }
+
+    function setProductCount(value) {
+      const countEl = document.getElementById('dual-product-count');
+      const productBtn = document.querySelector('.dual-left-product');
+      const dualView = document.getElementById('dual-view');
+      if (dualView) dualView.classList.toggle('has-two-products', Number(value) >= 2);
+      if (!countEl) return;
+      if (countEl.textContent === String(value)) return;
+      countEl.classList.remove('bumping');
+      countEl.textContent = value;
+      if (productBtn) productBtn.setAttribute('aria-label', `产物 ${value}`);
+      void countEl.offsetWidth;
+      countEl.classList.add('bumping');
+    }
+
+    function startRunStatus(label = '阅读中...') {
+      const dualView = document.getElementById('dual-view');
+      const labelEl = document.getElementById('dual-run-status-label');
+      const timeEl = document.getElementById('dual-run-status-time');
+      if (!dualView || !labelEl || !timeEl) return;
+
+      clearInterval(runStatusTimer);
+      clearTimeout(runStatusFinishTimer);
+      runStatusStart = performance.now();
+      runStatusTotalStart = runStatusStart;
+      setDualEnergy('5000');
+      labelEl.textContent = label;
+      timeEl.textContent = '0.0s';
+      dualView.classList.remove('run-finished');
+      dualView.classList.add('running');
+
+      runStatusTimer = setInterval(() => {
+        const seconds = ((performance.now() - runStatusStart) / 1000).toFixed(1);
+        timeEl.textContent = `${seconds}s`;
+      }, 100);
+    }
+
+    function updateRunStatus(label) {
+      const dualView = document.getElementById('dual-view');
+      const labelEl = document.getElementById('dual-run-status-label');
+      const timeEl = document.getElementById('dual-run-status-time');
+      if (!dualView || !labelEl || !timeEl || !dualView.classList.contains('running')) return;
+
+      clearInterval(runStatusTimer);
+      clearTimeout(runStatusFinishTimer);
+      runStatusStart = performance.now();
+      labelEl.textContent = label;
+      timeEl.textContent = '0.0s';
+      runStatusTimer = setInterval(() => {
+        const seconds = ((performance.now() - runStatusStart) / 1000).toFixed(1);
+        timeEl.textContent = `${seconds}s`;
+      }, 100);
+    }
+
+    function finishRunStatus(label = '已完成', energy = '4200') {
+      const dualView = document.getElementById('dual-view');
+      const labelEl = document.getElementById('dual-run-status-label');
+      const timeEl = document.getElementById('dual-run-status-time');
+      if (!dualView || !labelEl || !timeEl) return;
+
+      clearInterval(runStatusTimer);
+      clearTimeout(runStatusFinishTimer);
+      runStatusTimer = null;
+      if (runStatusTotalStart) {
+        timeEl.textContent = `总耗时 ${((performance.now() - runStatusTotalStart) / 1000).toFixed(1)}s`;
+      }
+      labelEl.textContent = label;
+      dualView.classList.remove('running');
+      dualView.classList.add('run-finished');
+      setDualEnergy(energy);
+      runStatusFinishTimer = setTimeout(() => {
+        dualView.classList.remove('run-finished');
+        runStatusStart = 0;
+        runStatusTotalStart = 0;
+      }, 900);
+    }
+
+    function clearRunStatus() {
+      const dualView = document.getElementById('dual-view');
+      clearInterval(runStatusTimer);
+      clearTimeout(runStatusFinishTimer);
+      runStatusTimer = null;
+      runStatusStart = 0;
+      runStatusTotalStart = 0;
+      if (dualView) dualView.classList.remove('running', 'run-finished');
+      setDualEnergy('5000');
+    }
+
+    /* ── 首页发送 → 进入对话态 ── */
     function sendQuery() {
       const field = document.querySelector('.input-field');
       const text = field.value.trim();
       if (!text) return;
 
       document.body.classList.add('dual-mode');
+      document.body.classList.remove('dual-file-open');
       document.getElementById('home-view').style.display = 'none';
       const dualView = document.getElementById('dual-view');
-      dualView.classList.add('active');
+      dualView.classList.remove('file-open');
+      dualView.classList.add('active', 'conversation-only');
+      resetResultArea();
+      startRunStatus('理解需求中');
 
       addUserBubble(text);
       field.value = '';
+      field.dispatchEvent(new Event('input'));
 
-      setTimeout(() => simulateAI(8), 400);
+      setTimeout(() => simulateAI(8, text), 400);
     }
 
     /* ── 双屏内继续发送 ── */
@@ -1272,9 +4584,14 @@
       const field = document.getElementById('dual-input');
       const text = field.value.trim();
       if (!text) return;
+      const dualView = document.getElementById('dual-view');
+      const keepPreview = dualView && dualView.classList.contains('file-open') && /网页|应用|生成|开发|创建|页面|PC|观赛助手/.test(text);
+      if (!keepPreview) resetResultArea();
+      startRunStatus('理解需求中');
       addUserBubble(text);
       field.value = '';
-      setTimeout(() => simulateAI(8), 400);
+      field.dispatchEvent(new Event('input'));
+      setTimeout(() => simulateAI(8, text), 400);
     }
 
     /* 关闭双屏回首页 */
@@ -1282,38 +4599,140 @@
       const dualView = document.getElementById('dual-view');
       dualView.classList.add('closing');
       dualView.addEventListener('animationend', () => {
-        dualView.classList.remove('active', 'closing');
-        document.body.classList.remove('dual-mode');
+        dualView.classList.remove('active', 'closing', 'conversation-only', 'file-open', 'website-open');
+        clearRunStatus();
+        document.body.classList.remove('dual-mode', 'dual-file-open');
         document.getElementById('home-view').style.display = '';
         document.getElementById('chat-messages').innerHTML = '';
-        document.getElementById('result-canvas').innerHTML = '';
-        document.getElementById('result-thinking').innerHTML = '';
+        setProductCount(1);
+        resetResultArea();
       }, { once: true });
+    }
+
+    function closePreviewToConversation() {
+      const dualView = document.getElementById('dual-view');
+      if (!dualView) return;
+      dualView.classList.remove('file-open', 'website-open');
+      dualView.classList.add('active', 'conversation-only');
+      document.body.classList.remove('dual-file-open');
+      switchTab(0);
+      const msgs = document.getElementById('chat-messages');
+      if (msgs) msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    function openGeneratedFile(type = 'document') {
+      const dualView = document.getElementById('dual-view');
+      if (!dualView) return;
+      dualView.classList.remove('conversation-only');
+      void dualView.offsetWidth;
+      dualView.classList.add('file-open');
+      dualView.classList.toggle('website-open', type === 'website');
+      document.body.classList.add('dual-file-open');
+      switchTab(0);
+      if (type === 'website') {
+        showWorldCupWebsiteResult();
+      } else {
+        showWorldCupResult();
+      }
     }
 
     function addUserBubble(text) {
       const msgs = document.getElementById('chat-messages');
       const el = document.createElement('div');
       el.className = 'bubble-user';
-      el.textContent = text;
+      const textEl = document.createElement('span');
+      textEl.className = 'bubble-user-text';
+      textEl.textContent = text;
+      el.appendChild(textEl);
       msgs.appendChild(el);
-      msgs.scrollTop = msgs.scrollHeight;
+      requestAnimationFrame(() => {
+        msgs.scrollTop = msgs.scrollHeight;
+      });
     }
 
-    function simulateAI(videoDuration) {
+    let superCardIndex = 0;
+    function slideSuperCards(direction, reset = false) {
+      const track = document.getElementById('super-cards-track');
+      if (!track) return;
+      const cards = track.querySelectorAll('.super-card:not(.hidden)');
+      const step = 294;
+      const maxIndex = Math.max(0, cards.length - 4);
+      superCardIndex = reset ? 0 : Math.min(maxIndex, Math.max(0, superCardIndex + direction));
+      track.style.setProperty('--super-card-offset', `${-superCardIndex * step}px`);
+    }
+
+    function resetResultArea() {
+      const resultCanvas = document.getElementById('result-canvas');
+      if (resultCanvas && !document.getElementById('panel-canvas')) {
+        resultCanvas.innerHTML = `
+          <div id="canvas-loading">
+            <video id="loading-video" autoplay loop muted playsinline src="deployed-assets/058-loading-57196992.mp4"></video>
+          </div>
+          <div class="canvas-panel" id="panel-canvas" style="display:none;"></div>
+          <div class="canvas-panel" id="panel-design" style="display:none;"></div>
+          <div class="canvas-panel" id="panel-preview" style="display:none;"></div>
+          <div class="canvas-panel" id="panel-style" style="display:none;"></div>
+          <div class="canvas-panel" id="panel-plan" style="display:none;flex-direction:column;align-items:flex-start;justify-content:flex-start;padding:24px;gap:10px;">
+            <div style="color:rgba(255,255,255,.6);font-size:13px;font-weight:500;">任务计划</div>
+            <div class="plan-item done">✓ 读取风格参考</div>
+            <div class="plan-item done">✓ 生成 HTML 结构</div>
+            <div class="plan-item done">✓ 实现三大模块</div>
+            <div class="plan-item done">✓ Canvas 质量检查</div>
+            <div class="plan-item done">✓ Nudge 控件配置</div>
+          </div>`;
+      }
+
+      const loading = document.getElementById('canvas-loading');
+      if (loading) loading.style.display = 'flex';
+      ['canvas', 'design', 'preview', 'style', 'plan'].forEach(id => {
+        const panel = document.getElementById('panel-' + id);
+        if (!panel) return;
+        panel.style.display = 'none';
+        if (id !== 'plan') panel.innerHTML = '';
+      });
+      const thinking = document.getElementById('result-thinking');
+      if (thinking) thinking.innerHTML = '';
+      const toolbar = document.getElementById('canvas-toolbar');
+      if (toolbar) toolbar.style.display = 'none';
+      document.querySelectorAll('.result-tab').forEach((tab, idx) => {
+        tab.classList.toggle('active', idx === 0);
+      });
+    }
+
+    function simulateAI(videoDuration, queryText = '') {
       const totalMs = (videoDuration || 8) * 1000;
       const msgs = document.getElementById('chat-messages');
       const ai = document.createElement('div');
       ai.className = 'bubble-ai';
       msgs.appendChild(ai);
+      const stickMessagesToBottom = () => {
+        requestAnimationFrame(() => {
+          msgs.scrollTop = msgs.scrollHeight;
+        });
+      };
 
       const ICON = {
         think: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 3v9h-9"/></svg>`,
         step:  `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
         canvas:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`,
+        search:`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>`,
+        tool:  `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M21 12l-9 5-9-5"/><path d="M21 16l-9 5-9-5"/></svg>`,
+        code:  `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 18l6-6-6-6"/><path d="M8 6l-6 6 6 6"/></svg>`,
       };
       const metaEl = (t,l) => `<div class="chain-meta ${t}">${ICON[t]||ICON.think}${l}</div>`;
       const cvs    = (l)   => `<div class="chain-meta canvas">${ICON.canvas}${l}</div>`;
+      const RUN_STATUS_LABELS = {
+        think: '读取与分析中',
+        search: '搜索资料中',
+        tool: '调用工具中',
+        code: '生成代码中',
+        canvas: '写入文件中',
+        step: '规划任务中'
+      };
+      const setRunNode = (type, label) => {
+        const normalized = label.replace(/^正在/, '').replace(/^已/, '');
+        updateRunStatus(RUN_STATUS_LABELS[type] || normalized || '处理中');
+      };
 
       // 打字机：插入空 div，然后逐字填充，返回 Promise
       function typeText(html, speedMs = 18) {
@@ -1336,7 +4755,7 @@
               i++;
               div.innerHTML = full.slice(0, i);
             }
-            msgs.scrollTop = msgs.scrollHeight;
+            stickMessagesToBottom();
             setTimeout(tick, speedMs);
           }
           tick();
@@ -1344,12 +4763,163 @@
       }
 
       function addThink(label) {
+        setRunNode('think', label);
         ai.insertAdjacentHTML('beforeend', metaEl('think', label));
         const el = ai.lastElementChild;
         el.classList.add('shimmering');
         return el;
       }
       function stopShimmer(el) { el.classList.remove('shimmering'); }
+
+      async function runWorldCupCase() {
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        const addMeta = (type, label) => {
+          setRunNode(type, label);
+          ai.insertAdjacentHTML('beforeend', metaEl(type, label));
+          stickMessagesToBottom();
+        };
+        const addSearchList = (items) => {
+          ai.insertAdjacentHTML('beforeend', `<ol class="search-results">${items.map((item, index) => `<li><span>${index + 1}.</span><span>${item}</span></li>`).join('')}</ol>`);
+          stickMessagesToBottom();
+        };
+
+        let thinking = addThink('正在查找文件内容');
+        await wait(650);
+        stopShimmer(thinking);
+        await typeText('我先梳理出 2026 世界杯观赛助手网页的核心功能模块，包括赛程展示、分组信息、热门球队介绍、比赛提醒、AI 胜负预测以及关注球队定制看板，以此作为网页开发的核心依据。识别到这是应用开发场景，需要匹配 app-builder 能力，我会先查找相关技能和资料，再创建网页应用。', 11);
+        addMeta('think', '已查找文件内容');
+        ai.insertAdjacentHTML('beforeend', `<div class="chain-code">Found 1 file(s) with matches for "app-builder":<br>~/.../.skills/doubao-app-builder/SKILL.md</div>`);
+        await wait(280);
+
+        thinking = addThink('正在搜索资料');
+        await wait(650);
+        stopShimmer(thinking);
+        await typeText('为搭建 2026 世界杯观赛助手网页，我将启动信息检索流程，重点收集赛事赛程、分组、热门球队等核心数据，为后续网页功能开发提供基础素材。', 11);
+        addMeta('search', '搜索 1 个关键词，参考 9 篇资料');
+        await typeText('“2026美加墨世界杯 赛程 比赛时间 分组”', 10);
+        addSearchList([
+          '2026-美加墨世界杯-全赛事-赛程查询',
+          '【任意球】小组赛末轮大冲刺 淘汰赛首场对决出炉_体育_央视网(cctv.com)',
+          '104场精彩比赛！一文详解美加墨世界杯分组、赛程、规则',
+          '2026年美加墨世界杯[国际足联举办的第23届世界杯足球赛]_百科',
+          '美加 墨 世界杯 赛程 公布',
+          '世界杯午报｜墨西哥一球未失强势晋级 南非战胜韩国列小组第二_央广网',
+          '美加墨世界杯赛程公布:6月11日打响揭幕战 7月19日进行决赛_新闻频道_央视网',
+          '哈萨克国际通讯社的微博',
+          'View the FIFA World Cup 2026 match schedule'
+        ]);
+        await wait(320);
+
+        addMeta('search', '搜索 1 个关键词，参考 10 篇资料');
+        await typeText('“2026世界杯 分组抽签结果 48支球队分组”', 10);
+        addSearchList([
+          '2026美加墨世界杯48支参赛球队确定 - 新华网客户端',
+          '2026美加墨世界杯分组公布 各组整体实力均衡',
+          '央视体育的微博',
+          '2026 FIFA World Cup teams, groups and match calendar'
+        ]);
+
+        await typeText('我已获取 2026 世界杯的基础信息，当前聚焦整理分组关键数据，明确赛事为 12 个小组、48 支球队参赛的赛制，为后续网页功能开发搭建核心数据框架。我会补充分组、赛程关键时间、热门球队、核心球星和 AI 预测所需的基础字段，并保留用户关注球队的定制看板入口。', 11);
+        addMeta('tool', '已使用工具');
+        await wait(420);
+
+        await typeText('我已完成 2026 世界杯观赛助手网页的信息收集，明确了网页需包含赛程、分组、热门球队、比赛提醒、AI 胜负预测和关注球队看板。接下来将调用 app_builder_agent 工具，启动网页应用的生成流程。', 11);
+        addMeta('tool', '已使用工具');
+        await wait(420);
+
+        await typeText('我计划调用 app_builder_agent 生成 2026 世界杯观赛助手网页，首先搭建完整的 user_prompt 框架，将赛程、分组、热门球队、比赛提醒、AI 胜负预测和关注球队定制看板纳入其中。AI 胜负预测会作为辅助分析能力保留，页面数据使用 mock 结构承载，方便后续替换为真实赛事数据。', 11);
+        thinking = addThink('正在生成设计规范');
+        await wait(760);
+        stopShimmer(thinking);
+        addMeta('code', '已生成设计规范');
+        await typeText('网页文件已生成。页面会以观赛助手为主线组织信息：顶部聚合倒计时和关注球队状态，中部展示赛程与分组，右侧承载热门球队、提醒与 AI 胜负预测，底部保留自定义看板模块。', 11);
+        ai.insertAdjacentHTML('beforeend', `<button class="generated-file-card file-preview" type="button" onclick="openGeneratedFile()" aria-label="打开生成的世界杯观赛助手文件">
+          <img class="file-preview-icon" src="deployed-assets/048-文档icon-c4f424fe.png" alt="" aria-hidden="true" />
+          <span class="file-preview-title">2026美加墨世界杯完整观赛指南</span>
+          <span class="file-preview-time">创建时间：16:11</span>
+          <span class="file-preview-art" aria-hidden="true"></span>
+        </button>
+        <div class="generated-file-actions" aria-hidden="true">
+          <img src="deployed-assets/060-Output-操作栏-7eb964d8.png" alt="" />
+        </div>`);
+
+        const loading = document.getElementById('canvas-loading');
+        if (loading) loading.style.display = 'none';
+        document.getElementById('result-thinking').innerHTML = '';
+        showWorldCupResult();
+        document.getElementById('canvas-toolbar').style.display = 'flex';
+        finishRunStatus('已完成');
+        msgs.scrollTop = msgs.scrollHeight;
+      }
+
+      async function runWorldCupWebBuildCase() {
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        const addMeta = (type, label) => {
+          setRunNode(type, label);
+          ai.insertAdjacentHTML('beforeend', metaEl(type, label));
+          stickMessagesToBottom();
+        };
+
+        addMeta('step', '明确网页应用需求');
+        await wait(280);
+        await typeText('我来帮你创建一个 2026 世界杯观赛助手网页应用。这是一个功能丰富的 PC 端网页，包含赛程、分组、球队看板、AI 预测、比赛提醒和关注球队定制看板等功能。', 10);
+
+        let thinking = addThink('正在生成设计规范');
+        await wait(620);
+        stopShimmer(thinking);
+        addMeta('tool', '已使用工具');
+        await typeText('我计划调用工具创建网页应用，需要详细描述用户需求，包括网页功能、结构、界面设计和交互方式。整体以 PC 端为主，视觉风格营造世界杯氛围但不过分花哨，首页聚焦今日重点、即将到来的比赛、热门球队动态和阿根廷专属看板。', 10);
+        addMeta('code', '设计规范生成完成');
+        addMeta('code', '开发任务规划完成');
+        await typeText('我将先加载图表与动画相关能力，创建 AI 预测插件实例，然后进入页面代码生成阶段。', 10);
+
+        addMeta('tool', '已使用工具');
+        addMeta('tool', '已使用工具');
+        addMeta('tool', '已使用工具');
+        addMeta('code', '插件配置完成');
+        await typeText('插件实例创建完成后，我会读取现有数据文件与关键模板文件，确认赛程、分组、球队和提醒的数据结构，为后续批量生成代码做准备。', 10);
+
+        addMeta('think', '已读取文件');
+        addMeta('think', '已读取文件');
+        addMeta('think', '已读取文件');
+        await typeText('我将先确认数据文件，补充分组数据（12 组 × 4 队）与完整淘汰赛赛程，随后创建 data 文件和工具文件，最后开始波 1 并行生成。', 10);
+        addMeta('canvas', '已编辑文件');
+        await typeText('球队数据已扩充，覆盖主要参赛球队、热门球队状态、关注球队阿根廷的战绩和晋级路径；同时补充 hooks、图表颜色工具和辅助函数，方便后续页面联动。', 10);
+        addMeta('canvas', '已编辑文件');
+        await typeText('数据与基础工具已准备完成，开始生成 Chrome 组件与首页 Sections，包括 AppSidebar、Header、Layout、今日重点、赛程时间线、热门球队、AI 胜负预测和关注球队看板。', 10);
+        addMeta('canvas', '正在写入文件');
+        addMeta('canvas', '正在写入文件');
+        addMeta('canvas', '正在写入文件');
+        await wait(520);
+
+        addMeta('step', '总结网页应用功能');
+        await typeText(`<strong>2026 世界杯观赛助手网页已开发完成！</strong><br><br><strong>⚽ 应用功能概览</strong><br><br><strong>🏠 首页（默认阿根廷看板）</strong><br>• 赛事状态栏：显示距离首场淘汰赛的倒计时<br>• 今日 / 明日重点：卡片式展示最值得关注的比赛<br>• 未来 3 天时间轴：快速浏览即将到来的淘汰赛<br>• 热门球队动态：展示 8 大夺冠热门的概率排行和状态<br>• 阿根廷专属看板：小组赛战绩、下轮对手、核心球员和晋级路径预测<br><br><strong>📅 完整赛程</strong><br>• 按日期分组展示全部 104 场比赛<br>• 支持按阶段筛选：小组赛、1/16 决赛、1/8 决赛、1/4 决赛、半决赛和决赛<br>• 区分已结束 / 未开始状态，点击卡片可展开详情<br><br><strong>🤖 AI 胜负预测</strong><br>• 淘汰赛对阵双方胜负概率可视化<br>• 雷达图展示实力对比<br>• 结合近期状态、历史交锋和晋级前景给出智能分析<br><br><strong>⏰ 观赛提醒</strong><br>• 日历视图查看全月赛程<br>• 一键添加或取消比赛提醒<br>• 对重点焦点战进行特别标注<br><br><strong>🎨 设计风格</strong><br>• 深蓝 + 金色世界杯经典配色，点缀绿色球场元素<br>• PC 端优化布局，信息密度适中<br>• 微交互动效流畅，所有数据基于 6 月 28 日小组赛结束后的赛况。`, 8);
+
+        ai.insertAdjacentHTML('beforeend', `<button class="generated-file-card file-preview web-app-preview" type="button" onclick="openGeneratedFile('website')" aria-label="打开 2026美加墨世界杯完整观赛指南网站">
+          <img class="file-preview-icon" src="deployed-assets/049-网站icon-b63cd7ca.png" alt="" aria-hidden="true" />
+          <span class="file-preview-title">2026美加墨世界杯完整观赛指南网站</span>
+          <span class="file-preview-time">创建时间：16:20</span>
+          <span class="file-preview-art" aria-hidden="true"></span>
+        </button>
+        <div class="generated-file-actions" aria-hidden="true">
+          <img src="deployed-assets/060-Output-操作栏-7eb964d8.png" alt="" />
+        </div>`);
+
+        showWorldCupWebsiteResult();
+        finishRunStatus('已完成', '3800');
+        setProductCount(2);
+        msgs.scrollTop = msgs.scrollHeight;
+      }
+
+      if (document.getElementById('dual-view')?.classList.contains('file-open') && /网页|应用|生成|开发|创建|页面|PC|观赛助手/.test(queryText)) {
+        runWorldCupWebBuildCase();
+        return;
+      }
+
+      if (/2026|世界杯|观赛助手|赛程|分组|热门球队/.test(queryText)) {
+        runWorldCupCase();
+        return;
+      }
 
       // 按比例分配时间节点，共 20 步，深度思考停留更长
       // weights: think=9%, text/canvas/step=3%  (8 thinks × 9% + 12 others × 3% = 72%+36%=108% → normalize)
@@ -1386,8 +4956,21 @@
           stopShimmer(lastThink);
           ai.insertAdjacentHTML('beforeend', cvs('画布：完成设计执行'));
           await typeText(`<strong>智能家居中控大屏界面已设计完成，基于 Linear 风格的高保真深色主题仪表板。</strong><br><br>界面包含三大核心模块：<br><br><strong>环境看板</strong> — 四格数据卡片展示温度、湿度、PM2.5 和 CO₂ 浓度，底部配有 24 小时温湿度双曲线趋势图，带渐变填充和当前时刻标记。<br><br><strong>快捷场景</strong> — 六宫格场景卡片（回家、离家、睡眠、观影、起床、会客），支持点击切换激活状态，激活时带有品牌色光晕和图标渐变效果。<br><br><strong>安防监控</strong> — 四路监控实时画面（客厅、门廊、主卧、车库），每路带红色 REC 录制标识、实时时间戳和在线状态点，画面底层用 CSS 渐变模拟房间空间感。<br><br>顶部状态栏显示实时时钟、天气和系统状态；底部设备栏汇总网关、在线设备数和网络延迟。已配置 3 组 Nudge 控件，可在 Canvas 中快速切换暗色/亮色/深海主题、调整主强调色和圆角大小。`, 12);
+          ai.insertAdjacentHTML('beforeend', `<button class="generated-file-card" type="button" onclick="openGeneratedFile()">
+            <span class="generated-file-icon">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <path d="M14 2v6h6"/>
+              </svg>
+            </span>
+            <span class="generated-file-copy">
+              <span class="generated-file-name">index.html</span>
+              <span class="generated-file-meta">网页文件已生成</span>
+            </span>
+            <span class="generated-file-open">打开双窗 ›</span>
+          </button>`);
           ai.insertAdjacentHTML('beforeend', `<div class="bubble-actions">
-            <img src="Output  操作栏.png" style="height:24px;display:block;opacity:.85;" />
+            <img src="deployed-assets/061-Output-操作栏-17ad2187.png" style="height:24px;display:block;opacity:.85;" />
           </div>`);
           const loading = document.getElementById('canvas-loading');
           if (loading) loading.style.display = 'none';
@@ -1395,6 +4978,7 @@
           // 展示真实画布内容
           showCanvasResult();
           document.getElementById('canvas-toolbar').style.display = 'flex';
+          finishRunStatus('已完成');
           msgs.scrollTop = msgs.scrollHeight;
         }],
       ];
@@ -1412,6 +4996,220 @@
       });
       const target = document.getElementById('panel-' + TAB_MAP[idx]);
       if (target) target.style.display = 'flex';
+    }
+
+    function showWorldCupWebsiteResult() {
+      switchTab(0);
+      document.getElementById('dual-view')?.classList.add('website-open');
+      const panel = document.getElementById('panel-canvas');
+      if (!panel) return;
+      const groupCards = [
+        ['A组', '墨西哥', '南非', '韩国', '捷克'],
+        ['B组', '瑞士', '加拿大', '波黑', '卡塔尔'],
+        ['C组', '巴西', '摩洛哥', '苏格兰', '海地'],
+        ['D组', '美国', '澳大利亚', '巴拉圭', '土耳其'],
+        ['J组', '阿根廷', '奥地利', '阿尔及利亚', '约旦'],
+        ['L组', '英格兰', '克罗地亚', '加纳', '巴拿马']
+      ];
+      panel.innerHTML = `
+        <div style="width:100%;height:100%;display:flex;flex-direction:column;background:#f3f3f3;color:#1b1b1b;font-family:Inter,'PingFang SC','Microsoft YaHei',Arial,sans-serif;box-sizing:border-box;overflow:hidden;">
+          <div style="height:43px;flex:0 0 43px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 24px 0 16px;border-bottom:1px solid #e2e2e2;background:#fff;box-sizing:border-box;">
+            <img src="deployed-assets/062-左侧内容-60cd91d2.png" alt="" style="width:162px;height:18px;display:block;object-fit:contain;justify-self:start;" />
+            <img src="deployed-assets/063-中间内容-3e189c05.png" alt="" style="width:253px;height:28px;display:block;object-fit:contain;justify-self:center;" />
+            <div style="display:flex;align-items:center;justify-self:end;gap:8px;height:32px;">
+              <button class="web-preview-action" type="button" aria-label="编辑" data-tip="编辑" style="width:59px;">
+                <img src="deployed-assets/064-编辑-ab467f7c.png" alt="" style="width:45px;height:18px;" />
+              </button>
+              <span style="width:1px;height:24px;background:#d9d9dc;display:block;"></span>
+              <button class="web-preview-action" type="button" aria-label="开发工具" data-tip="开发工具">
+                <img src="deployed-assets/065-开发工具-54d47f2a.png" alt="" style="width:18px;height:18px;" />
+              </button>
+              <button class="web-preview-action" type="button" aria-label="切换风格" data-tip="切换风格">
+                <img src="deployed-assets/066-换风格-21bd4e67.png" alt="" style="width:18px;height:18px;" />
+              </button>
+            </div>
+          </div>
+          <div style="flex:1;min-height:0;overflow:auto;background:#f3f3f3;">
+          <header style="position:sticky;top:0;z-index:5;height:58px;padding:0 32px;display:flex;align-items:center;justify-content:space-between;background:rgba(249,249,249,.92);backdrop-filter:blur(14px);border-bottom:1px solid rgba(115,118,136,.28);box-shadow:0 2px 10px rgba(15,23,42,.04);box-sizing:border-box;">
+            <div style="font-size:17px;font-weight:900;letter-spacing:-.02em;">FIFA World Cup 26</div>
+            <nav style="display:flex;align-items:center;gap:20px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#434656;">
+              <span>赛程</span><span>举办城市</span><span style="color:#003ec7;border-bottom:2px solid #003ec7;padding-bottom:5px;">分组</span><span>球队</span><span>球迷区</span>
+            </nav>
+            <div style="display:flex;align-items:center;gap:12px;font-size:11px;font-weight:800;">
+              <span style="color:#434656;">EN/CN</span>
+              <span style="height:28px;padding:0 18px;display:inline-flex;align-items:center;border-radius:999px;background:#003ec7;color:#fff;">门票</span>
+            </div>
+          </header>
+
+          <main style="width:100%;max-width:700px;margin:0 auto;padding:30px 32px 56px;box-sizing:border-box;">
+            <section style="padding:28px;border-radius:18px;background:#f9f9f9;border:1px solid rgba(195,197,217,.36);box-shadow:0 4px 14px rgba(15,23,42,.04);margin-bottom:28px;">
+              <div style="display:flex;justify-content:space-between;gap:24px;align-items:flex-end;border-bottom:1px solid #c3c5d9;padding-bottom:24px;">
+                <div>
+                  <h1 style="margin:0 0 8px;font-family:Montserrat,Inter,sans-serif;font-size:40px;line-height:1.06;font-weight:900;letter-spacing:-.03em;">征程开启</h1>
+                  <p style="margin:0;max-width:420px;font-size:14px;line-height:1.75;color:#434656;">见证在加拿大、墨西哥和美国的 16 个举办城市上演的每一次传球、进球和胜利。全世界于此汇聚。</p>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px;flex:0 0 150px;">
+                  <button style="height:38px;border:0;border-radius:999px;background:#1b1b1b;color:#f9f9f9;font-size:11px;font-weight:800;">下载完整 PDF 赛程</button>
+                  <button style="height:38px;border:1px solid #1b1b1b;border-radius:999px;background:transparent;color:#1b1b1b;font-size:11px;font-weight:800;">添加到日历</button>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:20px;">
+                <span style="font-size:11px;font-weight:800;letter-spacing:.08em;color:#737688;">按城市/区域筛选:</span>
+                ${['全部比赛','西海岸','中部地区','东海岸','墨西哥城市','加拿大城市'].map((item,index)=>`<span style="height:28px;padding:0 14px;display:inline-flex;align-items:center;border-radius:999px;background:${index===0?'#003ec7':'#e8e8e8'};color:${index===0?'#fff':'#434656'};font-size:11px;font-weight:800;">${item}</span>`).join('')}
+              </div>
+            </section>
+
+            <section style="display:grid;grid-template-columns:1.35fr .8fr;gap:20px;margin-bottom:30px;">
+              <div style="min-height:260px;position:relative;overflow:hidden;border-radius:16px;padding:24px;display:flex;align-items:flex-end;background:#061322;box-shadow:0 10px 24px rgba(0,62,199,.18);">
+                <img src="deployed-assets/067-1000_F_572864263_hKdhvIXLGUZVfNpKTd7XEIX8hSP3v95o-1-899d8434.png" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block;" />
+                <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.08) 0%,rgba(0,0,0,.08) 38%,rgba(0,0,0,.78) 100%);"></div>
+                <div style="position:relative;color:#fff;">
+                  <span style="display:inline-flex;height:22px;align-items:center;padding:0 10px;border-radius:4px;background:#003ec7;font-size:10px;font-weight:900;letter-spacing:.08em;">巅峰决赛</span>
+                  <h2 style="margin:10px 0 8px;font-size:25px;line-height:1.2;font-weight:900;">纽约/新泽西 2026</h2>
+                  <p style="margin:0;font-size:13px;line-height:1.7;color:rgba(255,255,255,.82);">7月19日，全球目光将汇聚梅多兰兹球场，见证冠军登顶。预定你的历史一刻。</p>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:18px;">
+                <div style="padding:20px;border-radius:16px;background:#fff;border:1px solid rgba(195,197,217,.42);box-shadow:0 4px 14px rgba(15,23,42,.04);">
+                  <div style="font-size:26px;margin-bottom:8px;color:#821dda;">⌖</div>
+                  <h3 style="margin:0 0 8px;font-size:18px;font-weight:800;">达拉斯枢纽</h3>
+                  <p style="margin:0;font-size:13px;line-height:1.65;color:#434656;">作为本届赛事承办比赛最多的城市，包括一场重磅半决赛。</p>
+                </div>
+                <div style="padding:20px;border-radius:16px;background:#fff;border:1px solid rgba(195,197,217,.42);border-left:4px solid #003ec7;box-shadow:0 4px 14px rgba(15,23,42,.04);">
+                  <div style="font-size:25px;margin-bottom:8px;color:#003ec7;">✦</div>
+                  <h3 style="margin:0 0 8px;font-size:18px;font-weight:800;">7月4日盛典</h3>
+                  <p style="margin:0;font-size:13px;line-height:1.65;color:#434656;">费城将在美国独立 250 周年纪念日承办 16 强淘汰赛。</p>
+                </div>
+              </div>
+            </section>
+
+            <section style="margin-bottom:30px;">
+              <h2 style="margin:0 0 16px;font-size:22px;font-weight:900;display:flex;align-items:center;gap:8px;"><span style="color:#003ec7;">▣</span>2026 赛程时间轴</h2>
+              <div style="border:1px solid rgba(195,197,217,.45);border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 4px 14px rgba(15,23,42,.04);">
+                ${[
+                  ['6月11日 - 27日','小组赛','48 支球队，12 个小组','#eaf0ff'],
+                  ['6月28日 - 7月3日','32 强淘汰赛','最佳第三名加入战局','#fff'],
+                  ['7月4日 - 8日','16 强','焦点战密集展开','#fff'],
+                  ['7月10日 - 19日','决赛周','半决赛、季军赛、冠军之夜','#fff']
+                ].map(item=>`<div style="display:grid;grid-template-columns:160px 1fr;gap:18px;padding:18px 20px;border-bottom:1px solid #e2e2e2;background:${item[3]};"><div style="font-size:11px;font-weight:900;color:#003ec7;letter-spacing:.06em;">${item[0]}</div><div><strong style="font-size:15px;">${item[1]}</strong><p style="margin:5px 0 0;font-size:12px;line-height:1.55;color:#737688;">${item[2]}</p></div></div>`).join('')}
+              </div>
+            </section>
+
+            <section>
+              <h2 style="margin:0 0 16px;font-size:22px;font-weight:900;display:flex;align-items:center;gap:8px;"><span style="color:#003ec7;">▦</span>小组赛分组</h2>
+              <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;">
+                ${groupCards.map(group=>`<div style="padding:18px;border-radius:16px;background:rgba(255,255,255,.86);backdrop-filter:blur(12px);border:1px solid rgba(0,0,0,.08);box-shadow:0 4px 14px rgba(15,23,42,.04);"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;"><h3 style="margin:0;font-size:17px;font-weight:900;color:#003ec7;">${group[0]}</h3><span style="font-size:11px;color:#737688;font-weight:700;">4 队</span></div>${group.slice(1).map((team,index)=>`<div style="display:flex;justify-content:space-between;align-items:center;height:30px;border-top:${index===0?'0':'1px solid #eeeeee'};font-size:13px;"><span>${team}</span><span style="color:${index<2?'#00736a':'#737688'};font-weight:700;">${index<2?'晋级':'待定'}</span></div>`).join('')}</div>`).join('')}
+              </div>
+            </section>
+          </main>
+          </div>
+        </div>`;
+    }
+
+    function showWorldCupResult() {
+      switchTab(0);
+      document.getElementById('dual-view')?.classList.remove('website-open');
+      const panel = document.getElementById('panel-canvas');
+      if (!panel) return;
+      panel.innerHTML = `
+        <div style="width:100%;height:100%;overflow:auto;background:#fff;color:#18181b;font-family:'PingFang SC','Microsoft YaHei',Arial,sans-serif;box-sizing:border-box;">
+          <article style="width:620px;margin:0 auto;padding:38px 0 54px;box-sizing:border-box;">
+            <h1 style="margin:0 0 12px;font-size:30px;line-height:1.34;font-weight:700;letter-spacing:0;color:#050505;">2026美加墨世界杯完整观赛指南</h1>
+
+            <section style="margin:22px 0 30px;padding:16px 18px;border:1px solid #71de80;border-radius:8px;background:#effdf1;font-size:14px;line-height:1.8;color:#18181b;">
+              <div><strong>⚽ 文档更新时间：</strong>2026年6月28日 | <strong>赛事状态：</strong>小组赛已结束，淘汰赛即将开始</div>
+              <div style="margin-top:10px;">2026年世界杯是历史上首次由三国联合举办、首次扩军至48支球队的世界杯，共104场比赛，历时39天。</div>
+            </section>
+
+            <h2 style="margin:0 0 20px;font-size:22px;line-height:1.45;font-weight:700;color:#050505;">一、赛事基本信息</h2>
+            <table style="width:100%;border-collapse:collapse;margin:0 0 34px;font-size:14px;line-height:1.55;color:#18181b;">
+              <thead>
+                <tr>
+                  <th style="width:28%;padding:11px 12px;text-align:left;border:1px solid #d9e5ff;background:#c9dcff;font-weight:700;">项目</th>
+                  <th style="padding:11px 12px;text-align:left;border:1px solid #d9e5ff;background:#c9dcff;font-weight:700;">详情</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${[
+                  ['赛事名称','2026年国际足联世界杯（美加墨世界杯）'],
+                  ['举办国家','美国、加拿大、墨西哥（历史首次三国联合举办）'],
+                  ['举办时间','2026年6月12日 - 7月20日（北京时间），共39天'],
+                  ['参赛球队','48支（历史首次扩军，较上届增加16支）'],
+                  ['比赛场次','104场（较上届增加40场）'],
+                  ['举办城市','16座（美国11座、墨西哥3座、加拿大2座）'],
+                  ['揭幕战','6月12日03:00 墨西哥 vs 南非（墨西哥城阿兹特克球场）'],
+                  ['决赛','7月20日03:00（纽约/新泽西大都会人寿球场）'],
+                  ['中国观赛时间','约70%比赛集中在北京时间00:00-12:00（凌晨至上午时段）']
+                ].map(row => `<tr><td style="padding:10px 12px;border:1px solid #e6e6e6;font-weight:700;background:#fff;">${row[0]}</td><td style="padding:10px 12px;border:1px solid #e6e6e6;">${row[1]}</td></tr>`).join('')}
+              </tbody>
+            </table>
+
+            <h2 style="margin:0 0 18px;font-size:22px;line-height:1.45;font-weight:700;color:#050505;">16座举办城市与球场</h2>
+            <div style="display:grid;grid-template-columns:1fr;gap:14px;margin:0 0 34px;font-size:14px;line-height:1.75;">
+              ${[
+                ['🇲🇽 墨西哥（3座）','墨西哥城 - 阿兹特克球场（揭幕战举办地，容量87,523人）|瓜达拉哈拉 - 阿克伦球场|蒙特雷 - BBVA球场'],
+                ['🇨🇦 加拿大（2座）','多伦多 - BMO球场（容量45,000人）|温哥华 - 不列颠哥伦比亚体育馆'],
+                ['🇺🇸 美国（11座）','纽约/新泽西 - 大都会人寿球场（决赛举办地，容量82,500人）|洛杉矶 - SoFi球场（容量70,240人，可扩至100,000人）|达拉斯 - AT&T体育场|迈阿密 - 硬石球场（季军赛举办地）|亚特兰大 - 梅赛德斯-奔驰体育场|西雅图 - 流明球场|波士顿 - 吉列体育场|费城 - 林肯金融球场|休斯顿 - NRG体育场|堪萨斯城 - 箭头体育场|旧金山湾区 - 李维斯球场']
+              ].map(item => `<section style="padding:14px 16px;border:1px solid #edf0f5;border-radius:10px;background:#fbfcff;"><h3 style="margin:0 0 8px;font-size:16px;line-height:1.45;font-weight:700;">${item[0]}</h3><ul style="margin:0;padding-left:20px;color:#3f4046;">${item[1].split('|').map(v => `<li style="margin:3px 0;">${v}</li>`).join('')}</ul></section>`).join('')}
+            </div>
+
+            <h2 style="margin:0 0 16px;font-size:22px;line-height:1.45;font-weight:700;color:#050505;">二、赛制重大变化</h2>
+            <p style="margin:0 0 16px;font-size:15px;line-height:1.9;color:#3f4046;">本届世界杯是赛制改革后的首届世界杯，与以往32队赛制有重大区别。</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:0 0 34px;">
+              <section style="padding:16px;border:1px solid #edf0f5;border-radius:10px;background:#fff;">
+                <h3 style="margin:0 0 10px;font-size:16px;line-height:1.45;font-weight:700;">小组赛阶段</h3>
+                <ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.8;color:#3f4046;">
+                  <li>48支球队分为12个小组（A-L组），每组4队</li>
+                  <li>每组进行单循环比赛，共72场小组赛</li>
+                  <li>每组前2名直接晋级32强</li>
+                  <li>成绩最好的8个第三名也晋级32强</li>
+                </ul>
+              </section>
+              <section style="padding:16px;border:1px solid #edf0f5;border-radius:10px;background:#fff;">
+                <h3 style="margin:0 0 10px;font-size:16px;line-height:1.45;font-weight:700;">淘汰赛阶段</h3>
+                <ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.8;color:#3f4046;">
+                  <li>1/16决赛：6月29日 - 7月4日</li>
+                  <li>1/8决赛：7月5日 - 7月8日</li>
+                  <li>1/4决赛：7月10日 - 7月12日</li>
+                  <li>决赛：7月20日03:00（纽约/新泽西）</li>
+                </ul>
+              </section>
+            </div>
+
+            <h2 style="margin:0 0 16px;font-size:22px;line-height:1.45;font-weight:700;color:#050505;">三、小组赛完整分组情况</h2>
+            <p style="margin:0 0 16px;font-size:14px;line-height:1.85;color:#5c616b;">以下为12个小组的最终分组及小组赛出线情况（截至6月28日小组赛已全部结束）。</p>
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:0 0 34px;">
+              ${[
+                ['A组','🇲🇽 墨西哥 ✅ 小组第一|🇿🇦 南非 ✅ 小组第二|🇰🇷 韩国 ❌ 小组第三|🇨🇿 捷克 ❌ 小组第四'],
+                ['B组','🇨🇭 瑞士 ✅ 小组第一|🇨🇦 加拿大 ✅ 小组第二|🇧🇦 波黑 ✅ 最佳第三|🇶🇦 卡塔尔 ❌ 小组第四'],
+                ['C组','🇧🇷 巴西 ✅ 小组第一|🇲🇦 摩洛哥 ✅ 小组第二|苏格兰 ❌ 小组第三|🇭🇹 海地 ❌ 小组第四'],
+                ['D组','🇺🇸 美国 ✅ 小组第一|🇦🇺 澳大利亚 ✅ 小组第二|🇵🇾 巴拉圭 ✅ 最佳第三|🇹🇷 土耳其 ❌ 小组第四'],
+                ['J组','🇦🇷 阿根廷 ✅ 小组第一|🇦🇹 奥地利 ✅ 小组第二|🇩🇿 阿尔及利亚 ✅ 最佳第三|🇯🇴 约旦 ❌ 小组第四'],
+                ['L组','英格兰 ✅ 小组第一|🇭🇷 克罗地亚 ✅ 小组第二|🇬🇭 加纳 ✅ 最佳第三|🇵🇦 巴拿马 ❌ 小组第四']
+              ].map(group => `<section style="padding:12px 14px;border:1px solid #edf0f5;border-radius:10px;background:#fbfcff;"><h3 style="margin:0 0 8px;font-size:15px;font-weight:700;">${group[0]}</h3>${group[1].split('|').map(team => `<div style="font-size:13px;line-height:1.8;color:#3f4046;">${team}</div>`).join('')}</section>`).join('')}
+            </div>
+
+            <h2 style="margin:0 0 16px;font-size:22px;line-height:1.45;font-weight:700;color:#050505;">四、淘汰赛完整赛程</h2>
+            <p style="margin:0 0 14px;font-size:14px;line-height:1.85;color:#3f4046;">🔥 1/16决赛（32进16）即将开始，首场淘汰赛：6月29日03:00 南非 vs 加拿大。</p>
+            <table style="width:100%;border-collapse:collapse;font-size:14px;line-height:1.55;color:#18181b;">
+              <thead>
+                <tr>
+                  ${['日期','时间','对阵','场地'].map(h => `<th style="padding:11px 12px;text-align:left;border:1px solid #d9e5ff;background:#c9dcff;font-weight:700;">${h}</th>`).join('')}
+                </tr>
+              </thead>
+              <tbody>
+                ${[
+                  ['6月29日','03:00','南非 vs 加拿大','洛杉矶体育场'],
+                  ['6月30日','01:00','巴西 vs 日本','休斯顿体育场'],
+                  ['6月30日','04:30','德国 vs 巴拉圭','波士顿体育场'],
+                  ['7月1日','05:00','法国 vs 瑞典','纽约/新泽西体育场'],
+                  ['7月4日','06:00','阿根廷 vs 佛得角','迈阿密体育场'],
+                  ['7月20日','03:00','决赛','纽约/新泽西大都会人寿球场']
+                ].map(row => `<tr>${row.map(cell => `<td style="padding:10px 12px;border:1px solid #e6e6e6;">${cell}</td>`).join('')}</tr>`).join('')}
+              </tbody>
+            </table>
+          </article>
+        </div>`;
     }
 
     /* ── 画布内容 ── */
@@ -1789,12 +5587,40 @@
       document.querySelectorAll('.result-tab').forEach((tab, idx) => {
         tab.addEventListener('click', () => switchTab(idx));
       });
-      document.querySelector('.input-field').addEventListener('keydown', e => {
+      const homeField = document.querySelector('.input-field');
+      const homeGlow = document.querySelector('.input-glow');
+      const homeSendButton = document.getElementById('home-send-btn');
+      const baseFieldHeight = 28;
+      const maxFieldHeight = baseFieldHeight + 24 * 7;
+
+      const syncHomeInput = () => {
+        homeField.style.height = `${baseFieldHeight}px`;
+        const fieldHeight = Math.min(Math.max(homeField.scrollHeight, baseFieldHeight), maxFieldHeight);
+        homeField.style.height = `${fieldHeight}px`;
+        homeField.style.overflowY = homeField.scrollHeight > maxFieldHeight ? 'auto' : 'hidden';
+        homeGlow.style.height = `${108 + fieldHeight - baseFieldHeight}px`;
+        homeSendButton.disabled = homeField.value.trim().length === 0;
+      };
+
+      homeField.addEventListener('input', syncHomeInput);
+      syncHomeInput();
+
+      homeField.addEventListener('keydown', e => {
         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendQuery(); }
       });
-      document.getElementById('home-send-btn').addEventListener('click', sendQuery);
+      homeSendButton.addEventListener('click', sendQuery);
 
-      document.getElementById('dual-input').addEventListener('keydown', e => {
+      const dualField = document.getElementById('dual-input');
+      const dualSendButton = document.getElementById('dual-send-btn');
+      const syncDualInput = () => {
+        if (!dualSendButton) return;
+        dualSendButton.disabled = dualField.value.trim().length === 0;
+      };
+
+      dualField.addEventListener('input', syncDualInput);
+      syncDualInput();
+
+      dualField.addEventListener('keydown', e => {
         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendDual(); }
       });
     });
